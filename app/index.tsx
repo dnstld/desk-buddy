@@ -5,8 +5,8 @@ import { Text, View } from "react-native";
 export default function Index() {
   useFocusEffect(
     useCallback(() => {
-      // Redirect to /desks route when the screen comes into focus
-      router.replace("/desks");
+      // Redirect to /rooms route when the screen comes into focus
+      router.replace("/rooms");
     }, [])
   );
 
