@@ -19,6 +19,7 @@ function RootLayoutNav() {
     if (loading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const inAppGroup = segments[0] === "(app)";
     const inCallbackScreen =
       segments[0] === "auth" && segments[1] === "callback";
 
@@ -37,8 +38,8 @@ function RootLayoutNav() {
     if (session && inAuthGroup) {
       // Redirect authenticated users away from auth screens to rooms
       console.log("📍 Layout: Redirecting authenticated user to rooms");
-      router.replace("/rooms");
-    } else if (!session && !inAuthGroup) {
+      router.replace("/(app)/" as any);
+    } else if (!session && !inAuthGroup && !inAppGroup) {
       // Redirect unauthenticated users to auth screens
       console.log("📍 Layout: Redirecting unauthenticated user to login");
       router.replace("/(auth)/login");
@@ -59,21 +60,13 @@ function RootLayoutNav() {
         headerTitleStyle: {
           fontWeight: "bold",
         },
+        headerShown: false,
       }}
     >
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(app)" options={{ headerShown: false }} />
       <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="rooms/index" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="rooms/create/index"
-        options={{ title: "Create Room", presentation: "modal" }}
-      />
-      <Stack.Screen
-        name="rooms/edit/[id]"
-        options={{ title: "Edit Room", presentation: "modal" }}
-      />
     </Stack>
   );
 }

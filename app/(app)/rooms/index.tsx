@@ -1,4 +1,3 @@
-import HeaderWithMenu from "@/src/components/header-with-menu";
 import Room from "@/src/components/room";
 import RoomsEmpty from "@/src/components/rooms-empty";
 import FAB from "@/src/components/ui/fab";
@@ -9,7 +8,7 @@ import { FlatList, View } from "react-native";
 
 export default function Rooms() {
   const handleCreateRoom = () => {
-    router.push("/rooms/create");
+    router.push("/(app)/rooms/create/" as any);
   };
 
   const renderRoom = ({ item }: { item: RoomWithDetails }) => (
@@ -18,11 +17,6 @@ export default function Rooms() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <HeaderWithMenu
-        title="Your Rooms"
-        subtitle={`${mockRooms.length} rooms`}
-      />
-
       <FlatList
         data={mockRooms}
         renderItem={renderRoom}

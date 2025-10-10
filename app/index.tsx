@@ -11,7 +11,7 @@ export default function Index() {
       if (!loading) {
         if (session) {
           // User is authenticated, redirect to rooms
-          router.replace("/rooms");
+          router.replace("/(app)/rooms" as any);
         } else if (!authError) {
           // Only redirect to login if there's no auth error pending
           // This prevents interfering with error screens
