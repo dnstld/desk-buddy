@@ -43,6 +43,7 @@ export default function RoomForm({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<RoomFormData>({
@@ -64,7 +65,6 @@ export default function RoomForm({
   });
 
   const watchMeeting = watch("meeting");
-  const watchTotalSeats = watch("totalSeats");
 
   const showToastNotification = (
     message: string,
@@ -260,7 +260,13 @@ export default function RoomForm({
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => onChange(true)}
+                    onPress={() => {
+                      onChange(true);
+                      const currentSeats = watch("totalSeats");
+                      if (currentSeats === 1) {
+                        setValue("totalSeats", 2);
+                      }
+                    }}
                     className={`
                       flex-1 flex-row items-center justify-center p-4 rounded-lg border-2
                       ${
@@ -336,15 +342,17 @@ export default function RoomForm({
                 />
               )}
             />
-            {errors.totalSeats && (
-              <Text className="text-red-500 text-sm">
-                {errors.totalSeats.message}
-              </Text>
-            )}
-            {watchMeeting && watchTotalSeats < 2 && (
-              <Text className="text-amber-600 text-sm">
-                Meeting rooms require at least 2 seats
-              </Text>
+            {watchMeeting && (
+              <View className="flex-row items-center gap-1">
+                <MaterialCommunityIcons name="exclamation-thick" />
+                <Text
+                  className={`text-sm ${
+                    errors.totalSeats ? "text-red-500" : "text-gray-500"
+                  }`}
+                >
+                  Meeting rooms require at least 2 seats
+                </Text>
+              </View>
             )}
           </View>
 
