@@ -12,10 +12,11 @@ export const mockRooms: RoomWithDetails[] = [
     elevator: true,
     floor: 3,
     height: null,
-    published: true,
+    published: false,
     room_name: "Green Valley",
     seat_limit: 12,
     wheelchair: true,
+    pet_friendly: true,
     width: null,
     meeting: false,
     seats: [
@@ -96,6 +97,7 @@ export const mockRooms: RoomWithDetails[] = [
     room_name: "Purple Executive",
     seat_limit: 8,
     wheelchair: true,
+    pet_friendly: false,
     width: null,
     meeting: true,
     seats: Array.from({ length: 8 }, (_, i) => ({
@@ -133,7 +135,7 @@ export const mockRooms: RoomWithDetails[] = [
     elevator: false,
     floor: 1,
     height: null,
-    published: true,
+    published: false,
     room_name: "Red Sunset",
     seat_limit: 6,
     wheelchair: false,
@@ -161,6 +163,7 @@ export const mockRooms: RoomWithDetails[] = [
     room_name: "Orange Innovation Hub",
     seat_limit: 20,
     wheelchair: true,
+    pet_friendly: true,
     width: null,
     meeting: false,
     seats: Array.from({ length: 20 }, (_, i) => ({

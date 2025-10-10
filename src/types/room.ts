@@ -41,6 +41,7 @@ export interface Room {
   room_name: string;
   seat_limit: number;
   wheelchair: boolean;
+  pet_friendly?: boolean;
   width?: number | null;
   meeting?: boolean;
   seats: Seat[];

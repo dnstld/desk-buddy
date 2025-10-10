@@ -23,10 +23,14 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="rooms/index" options={{ title: "Your Rooms" }} />
+        <Stack.Screen name="rooms/index" options={{ headerShown: false }} />
         <Stack.Screen
           name="rooms/create/index"
           options={{ title: "Create Room", presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="rooms/edit/[id]"
+          options={{ title: "Edit Room", presentation: "modal" }}
         />
       </Stack>
     </SafeAreaProvider>
