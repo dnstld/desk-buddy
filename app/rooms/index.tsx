@@ -1,11 +1,11 @@
 import Room from "@/src/components/room";
 import RoomsEmpty from "@/src/components/rooms-empty";
 import FAB from "@/src/components/ui/fab";
-import Header from "@/src/components/ui/header";
 import { mockRooms } from "@/src/data/mockRooms";
 import { RoomWithDetails } from "@/src/types/room";
 import { router } from "expo-router";
 import { FlatList, View } from "react-native";
+import HeaderWithMenu from "../../components/HeaderWithMenu";
 
 export default function Rooms() {
   const handleCreateRoom = () => {
@@ -18,7 +18,10 @@ export default function Rooms() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <Header title="Your Rooms" subtitle={`${mockRooms.length} rooms`} />
+      <HeaderWithMenu
+        title="Your Rooms"
+        subtitle={`${mockRooms.length} rooms`}
+      />
 
       <FlatList
         data={mockRooms}
