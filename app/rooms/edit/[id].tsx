@@ -1,15 +1,18 @@
+import RoomForm from "@/src/components/room-form";
 import Button from "@/src/components/ui/button";
 import ConfirmationDialog from "@/src/components/ui/confirmation-dialog";
 import { useRoomActions } from "@/src/hooks/use-room-actions";
 import { RoomWithDetails } from "@/src/types/room";
+import { RoomFormData } from "@/src/validations/room-form";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 export default function EditRoom() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [room, setRoom] = useState<RoomWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Mock room data - replace with actual data fetching
   useEffect(() => {
@@ -45,10 +48,62 @@ export default function EditRoom() {
     },
   });
 
-  const handleSave = () => {
-    // TODO: Implement save logic
-    console.log("Save room changes");
+  const handleSubmit = async (data: RoomFormData) => {
+    setIsSubmitting(true);
+    try {
+      // Here you would call your API to update the room
+      console.log("Updating room with data:", data);
+
+      // Simulate API call with potential failure (for testing error handling)
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // Simulate success most of the time, but occasionally fail for testing
+          const shouldSucceed = Math.random() > 0.2; // 80% success rate
+          if (shouldSucceed) {
+            console.log("✅ Simulated API success");
+            resolve(true);
+          } else {
+            console.log(
+              "❌ Simulated API failure (this is expected for testing)"
+            );
+            reject(new Error("Server error: Unable to update room"));
+          }
+        }, 1000);
+      });
+
+      // Update local room data
+      if (room) {
+        const updatedRoom: RoomWithDetails = {
+          ...room,
+          room_name: data.name,
+          description: data.description || null,
+          seat_limit: data.totalSeats,
+          meeting: data.meeting,
+          wheelchair: data.wheelchair,
+          elevator: data.elevator,
+          pet_friendly: data.petFriendly,
+          floor: data.floor,
+          color: data.color,
+        };
+        setRoom(updatedRoom);
+      }
+    } catch (error) {
+      console.error("Failed to update room:", error);
+      throw error; // Re-throw to let RoomForm handle the error display
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSuccess = () => {
+    // Navigate back immediately
     router.back();
+
+    // TODO: In a real app, you could:
+    // 1. Use navigation state to pass success message
+    // 2. Use a global state management solution
+    // 3. Show the toast on the destination screen
+    console.log("✅ Room updated successfully! (Navigation completed)");
   };
 
   if (loading || !room) {
@@ -61,42 +116,22 @@ export default function EditRoom() {
 
   return (
     <View className="flex-1 bg-white">
-      <ScrollView className="flex-1 px-4 py-6">
-        {/* Room Form Content */}
-        <View className="items-center justify-center py-20">
-          <Text className="text-gray-600 text-lg text-center mb-4">
-            Edit Room Form
-          </Text>
-          <Text className="text-2xl font-bold text-primary-500 mb-2">
-            {room.room_name}
-          </Text>
-          <Text className="text-gray-500 text-sm">Room ID: {id}</Text>
-          <Text className="text-gray-400 text-xs mt-4 text-center px-8">
-            This will contain the room editing form fields, similar to the
-            create room screen.
-          </Text>
-        </View>
-      </ScrollView>
+      <RoomForm
+        initialData={room}
+        onSubmit={handleSubmit}
+        onSuccess={handleSuccess}
+        submitButtonText="Save Changes"
+        isLoading={isSubmitting}
+      />
 
-      {/* Action Buttons */}
+      {/* Delete Button - Positioned below the form */}
       <View className="p-4 border-t border-gray-200 bg-white">
-        <View className="space-y-3">
-          {/* Primary Action */}
-          <Button
-            title="Save Changes"
-            icon="content-save"
-            onPress={handleSave}
-            variant="primary"
-          />
-
-          {/* Secondary Action */}
-          <Button
-            title="Delete Room"
-            icon="delete"
-            onPress={actions.showDeleteConfirmation}
-            variant="danger"
-          />
-        </View>
+        <Button
+          title="Delete Room"
+          icon="delete"
+          onPress={actions.showDeleteConfirmation}
+          variant="danger"
+        />
       </View>
 
       {/* Confirmation Dialog */}
