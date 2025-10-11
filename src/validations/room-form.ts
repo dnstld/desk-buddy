@@ -28,7 +28,7 @@ export const roomFormSchema = z.object({
   floor: z
     .number({ message: "Floor is required" })
     .int("Floor must be a whole number")
-    .min(1, "Floor must be at least 1")
+    .min(-5, "Floor must be at least B5")
     .max(50, "Floor cannot exceed 50"),
     
   color: z.string(),
@@ -55,6 +55,6 @@ export const defaultRoomFormValues: RoomFormData = {
   wheelchair: false,
   elevator: false,
   petFriendly: false,
-  floor: 1,
+  floor: 0,
   color: "#3B82F6",
 };
