@@ -1,3 +1,4 @@
+import { themeColors } from "@/src/constants/colors";
 import { useFloorOptions } from "@/src/hooks/use-floor-options";
 import { RoomWithDetails } from "@/src/types/room";
 import {
@@ -25,14 +26,15 @@ interface RoomFormProps {
   initialData?: Partial<RoomWithDetails>;
   onSubmit: (data: RoomFormData) => Promise<void>;
   onSuccess?: () => void;
+  onCancel?: () => void;
   submitButtonText?: string;
   isLoading?: boolean;
 }
-
 export default function RoomForm({
   initialData,
   onSubmit,
   onSuccess,
+  onCancel,
   submitButtonText = "Save",
   isLoading = false,
 }: RoomFormProps) {
@@ -72,7 +74,7 @@ export default function RoomForm({
         elevator: initialData.elevator || false,
         petFriendly: initialData.pet_friendly || false,
         floor: initialData.floor || 1,
-        color: initialData.color || "#3B82F6",
+        color: initialData.color || themeColors.primary,
       }),
     },
   });
@@ -257,7 +259,9 @@ export default function RoomForm({
                     <MaterialCommunityIcons
                       name="account"
                       size={24}
-                      color={!value ? "#3B82F6" : "#6B7280"}
+                      color={
+                        !value ? themeColors.primary : themeColors.textSecondary
+                      }
                       style={{ marginRight: 8 }}
                     />
                     <Text
@@ -284,7 +288,9 @@ export default function RoomForm({
                     <MaterialCommunityIcons
                       name="account-group"
                       size={24}
-                      color={value ? "#3B82F6" : "#6B7280"}
+                      color={
+                        value ? themeColors.primary : themeColors.textSecondary
+                      }
                       style={{ marginRight: 8 }}
                     />
                     <Text
@@ -409,7 +415,7 @@ export default function RoomForm({
                                     <MaterialCommunityIcons
                                       name="check"
                                       size={20}
-                                      color="#3B82F6"
+                                      color={themeColors.primary}
                                     />
                                   )}
                                 </View>
@@ -524,7 +530,7 @@ export default function RoomForm({
                                       <MaterialCommunityIcons
                                         name="check"
                                         size={20}
-                                        color="#3B82F6"
+                                        color={themeColors.primary}
                                       />
                                     )}
                                   </View>
@@ -562,7 +568,7 @@ export default function RoomForm({
                     <MaterialCommunityIcons
                       name="wheelchair-accessibility"
                       size={24}
-                      color="#6B7280"
+                      color={themeColors.textSecondary}
                     />
                     <View>
                       <Text className="text-base font-medium text-gray-900">
@@ -576,8 +582,15 @@ export default function RoomForm({
                   <Switch
                     value={value}
                     onValueChange={onChange}
-                    trackColor={{ false: "#E5E7EB", true: "#93C5FD" }}
-                    thumbColor={value ? "#3B82F6" : "#F3F4F6"}
+                    trackColor={{
+                      false: themeColors.switchTrackInactive,
+                      true: themeColors.switchTrackActive,
+                    }}
+                    thumbColor={
+                      value
+                        ? themeColors.switchThumbActive
+                        : themeColors.switchThumbInactive
+                    }
                   />
                 </View>
               )}
@@ -593,7 +606,7 @@ export default function RoomForm({
                     <MaterialCommunityIcons
                       name="elevator"
                       size={24}
-                      color="#6B7280"
+                      color={themeColors.textSecondary}
                     />
                     <View>
                       <Text className="text-base font-medium text-gray-900">
@@ -607,8 +620,15 @@ export default function RoomForm({
                   <Switch
                     value={value}
                     onValueChange={onChange}
-                    trackColor={{ false: "#E5E7EB", true: "#93C5FD" }}
-                    thumbColor={value ? "#3B82F6" : "#F3F4F6"}
+                    trackColor={{
+                      false: themeColors.switchTrackInactive,
+                      true: themeColors.switchTrackActive,
+                    }}
+                    thumbColor={
+                      value
+                        ? themeColors.switchThumbActive
+                        : themeColors.switchThumbInactive
+                    }
                   />
                 </View>
               )}
@@ -624,7 +644,7 @@ export default function RoomForm({
                     <MaterialCommunityIcons
                       name="dog-side"
                       size={24}
-                      color="#6B7280"
+                      color={themeColors.textSecondary}
                     />
                     <View>
                       <Text className="text-base font-medium text-gray-900">
@@ -638,8 +658,15 @@ export default function RoomForm({
                   <Switch
                     value={value}
                     onValueChange={onChange}
-                    trackColor={{ false: "#E5E7EB", true: "#93C5FD" }}
-                    thumbColor={value ? "#3B82F6" : "#F3F4F6"}
+                    trackColor={{
+                      false: themeColors.switchTrackInactive,
+                      true: themeColors.switchTrackActive,
+                    }}
+                    thumbColor={
+                      value
+                        ? themeColors.switchThumbActive
+                        : themeColors.switchThumbInactive
+                    }
                   />
                 </View>
               )}
@@ -650,14 +677,28 @@ export default function RoomForm({
 
       {/* Submit Button */}
       <View className="p-8 border-t border-gray-200 bg-white">
-        <Button
-          title={submitButtonText}
-          onPress={handleFormSubmit}
-          loading={isSubmitting || isLoading}
-          disabled={isSubmitting || isLoading}
-          icon="content-save"
-          variant="primary"
-        />
+        <View className="flex-row gap-4">
+          {onCancel && (
+            <View className="flex-1">
+              <Button
+                title="Cancel"
+                onPress={onCancel}
+                variant="secondary"
+                icon="close"
+              />
+            </View>
+          )}
+          <View className="flex-1">
+            <Button
+              title={submitButtonText}
+              onPress={handleFormSubmit}
+              loading={isSubmitting || isLoading}
+              disabled={isSubmitting || isLoading}
+              icon="content-save"
+              variant="primary"
+            />
+          </View>
+        </View>
       </View>
 
       {/* Toast Notifications */}

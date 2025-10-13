@@ -42,9 +42,17 @@ export default function CreateRoom() {
     console.log("✅ Room created successfully! (Navigation completed)");
   };
 
+  const handleCancel = () => {
+    router.back();
+  };
+
   return (
     <View className="flex-1 bg-white">
-      <RoomForm onSubmit={handleSubmit} onSuccess={handleSuccess} />
+      <RoomForm
+        onSubmit={handleSubmit}
+        onSuccess={handleSuccess}
+        onCancel={handleCancel}
+      />
     </View>
   );
 }

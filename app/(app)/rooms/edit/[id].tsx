@@ -1,5 +1,4 @@
 import RoomForm from "@/src/components/room-form";
-import Button from "@/src/components/ui/button";
 import ConfirmationDialog from "@/src/components/ui/confirmation-dialog";
 import { useRoomActions } from "@/src/hooks/use-room-actions";
 import { RoomWithDetails } from "@/src/types/room";
@@ -41,7 +40,7 @@ export default function EditRoom() {
     }, 1000);
   }, [id]);
 
-  const { confirmationProps, actions } = useRoomActions({
+  const { confirmationProps } = useRoomActions({
     room: room!,
     onRoomUpdate: (updatedRoom) => {
       setRoom(updatedRoom);
@@ -106,6 +105,10 @@ export default function EditRoom() {
     console.log("✅ Room updated successfully! (Navigation completed)");
   };
 
+  const handleCancel = () => {
+    router.back();
+  };
+
   if (loading || !room) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
@@ -120,19 +123,10 @@ export default function EditRoom() {
         initialData={room}
         onSubmit={handleSubmit}
         onSuccess={handleSuccess}
-        submitButtonText="Save Changes"
+        onCancel={handleCancel}
+        submitButtonText="Save"
         isLoading={isSubmitting}
       />
-
-      {/* Delete Button - Positioned below the form */}
-      <View className="p-4 border-t border-gray-200 bg-white">
-        <Button
-          title="Delete Room"
-          icon="delete"
-          onPress={actions.showDeleteConfirmation}
-          variant="danger"
-        />
-      </View>
 
       {/* Confirmation Dialog */}
       <ConfirmationDialog {...confirmationProps} />
