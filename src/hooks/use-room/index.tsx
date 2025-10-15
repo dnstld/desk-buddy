@@ -3,21 +3,20 @@ import { useMemo } from "react";
 
 export function useRoom(room: RoomWithDetails) {
   const {
-    room_name,
-    color,
-    seats,
-    meeting,
+    name,
+    seats = [],
+    type,
     description,
     floor,
-    wheelchair,
-    elevator,
+    wheelchair_accessible,
+    has_elevator,
     pet_friendly,
   } = room;
 
   const occupancyData = useMemo(() => {
     const total = seats.length;
     const reserved = seats.filter(
-      (seat) => seat.reservations.length > 0
+      (seat) => seat.reservation && seat.reservation.length > 0
     ).length;
     const available = total - reserved;
     const percent = total > 0 ? (reserved / total) * 100 : 0;
@@ -50,19 +49,18 @@ export function useRoom(room: RoomWithDetails) {
   }, [occupancyData]);
 
   const hasAmenities = useMemo(() => {
-    return wheelchair || elevator || pet_friendly;
-  }, [wheelchair, elevator, pet_friendly]);
+    return wheelchair_accessible || has_elevator || pet_friendly;
+  }, [wheelchair_accessible, has_elevator, pet_friendly]);
 
   return {
-    // Data
-    room_name,
-    color,
+    // Data (using database field names)
+    name,
     seats,
-    meeting,
+    meeting: type === "meeting",
     description,
     floor,
-    wheelchair,
-    elevator,
+    wheelchair: wheelchair_accessible,
+    elevator: has_elevator,
     pet_friendly,
 
     // Calculated data

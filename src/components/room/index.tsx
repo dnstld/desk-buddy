@@ -1,4 +1,5 @@
 import { useRoom } from "@/src/hooks/use-room";
+import { useRoomMutations } from "@/src/hooks/use-room-mutations";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
@@ -9,6 +10,7 @@ import Button from "../ui/button";
 import Chip from "../ui/chip";
 import ConfirmationDialog from "../ui/confirmation-dialog";
 import ProgressBar from "../ui/progress-bar";
+import Toast from "../ui/toast";
 
 interface RoomProps {
   room: RoomWithDetails;
@@ -17,8 +19,7 @@ interface RoomProps {
 
 export default function Room({ room, onRoomUpdate }: RoomProps) {
   const {
-    room_name,
-    color,
+    name,
     seats,
     meeting,
     description,
@@ -32,13 +33,31 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
     hasAmenities,
   } = useRoom(room);
 
+  const { deleteRoom, publishRoom } = useRoomMutations();
+
   const [showPublishConfirmation, setShowPublishConfirmation] = useState(false);
   const [publishLoading, setPublishLoading] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Toast state
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error" | "info">(
+    "success"
+  );
+
+  const showToastNotification = (
+    message: string,
+    type: "success" | "error" | "info" = "success"
+  ) => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+  };
+
   const handleEdit = () => {
-    router.push(`/rooms/edit/${room.id}` as any);
+    router.push(`/(app)/rooms/edit/${room.id}` as any);
   };
 
   const handlePublishConfirmation = () => {
@@ -53,25 +72,36 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
     setPublishLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Call the actual publish API
+      const updatedRoom = await publishRoom(room.id, !room.published);
 
-      // Optimistic update
-      const updatedRoom: RoomWithDetails = {
-        ...room,
-        published: !room.published,
-      };
+      if (updatedRoom) {
+        // Update local state
+        onRoomUpdate?.(updatedRoom as RoomWithDetails);
+      }
 
-      onRoomUpdate?.(updatedRoom);
       setShowPublishConfirmation(false);
 
+      // Show success toast
+      const action = room.published ? "unpublished" : "published";
+      showToastNotification(
+        `Room "${room.name}" ${action} successfully!`,
+        "success"
+      );
+
       console.log(
-        `Room "${room.room_name}" ${
+        `Room "${room.name}" ${
           room.published ? "unpublished" : "published"
         } successfully`
       );
     } catch (error) {
       console.error("Failed to publish/unpublish room:", error);
+      showToastNotification(
+        `Failed to ${
+          room.published ? "unpublish" : "publish"
+        } room. Please try again.`,
+        "error"
+      );
     } finally {
       setPublishLoading(false);
     }
@@ -81,14 +111,25 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
     setDeleteLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Call the actual delete API
+      await deleteRoom(room.id);
 
       setShowDeleteConfirmation(false);
-      // Navigate back or handle room removal from list
-      console.log(`Room "${room.room_name}" deleted successfully`);
+
+      // Show success toast
+      showToastNotification(
+        `Room "${room.name}" deleted successfully!`,
+        "success"
+      );
+
+      // The real-time subscription will automatically remove the room from the list
+      console.log(`Room "${room.name}" deleted successfully`);
     } catch (error) {
       console.error("Failed to delete room:", error);
+      showToastNotification(
+        "Failed to delete room. Please try again.",
+        "error"
+      );
     } finally {
       setDeleteLoading(false);
     }
@@ -162,12 +203,7 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
       </View>
 
       {/* Room name */}
-      <Text
-        className="text-2xl font-bold leading-tight flex-1"
-        style={{ color: color || "#000" }}
-      >
-        {room_name}
-      </Text>
+      <Text className="text-2xl font-bold leading-tight flex-1">{name}</Text>
 
       {description && (
         <Text className="text-sm text-gray-600" numberOfLines={2}>
@@ -233,8 +269,8 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
         title={room.published ? "Unpublish Room" : "Publish Room"}
         message={
           room.published
-            ? `Are you sure you want to unpublish "${room.room_name}"? It will no longer be available for bookings.`
-            : `Are you sure you want to publish "${room.room_name}"? This will make it available for bookings.`
+            ? `Are you sure you want to unpublish "${room.name}"? It will no longer be available for bookings.`
+            : `Are you sure you want to publish "${room.name}"? This will make it available for bookings.`
         }
         confirmText="Publish"
         confirmVariant="success"
@@ -248,13 +284,21 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
       <ConfirmationDialog
         visible={showDeleteConfirmation}
         title="Delete Room"
-        message={`Are you sure you want to delete "${room.room_name}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${room.name}"? This action cannot be undone.`}
         confirmText="Delete"
         confirmVariant="danger"
         icon="delete"
         onConfirm={handleDelete}
         onCancel={cancelDelete}
         loading={deleteLoading}
+      />
+
+      {/* Toast Notifications */}
+      <Toast
+        visible={showToast}
+        message={toastMessage}
+        type={toastType}
+        onHide={() => setShowToast(false)}
       />
     </View>
   );

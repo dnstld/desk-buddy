@@ -49,7 +49,7 @@ export type Database = {
           },
         ]
       }
-      reservations: {
+      reservation: {
         Row: {
           booking_date: string | null
           created_at: string
@@ -101,11 +101,11 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           description: string | null
-          desk_limit: number
           floor: number | null
           has_elevator: boolean | null
-          id: number
+          id: string
           name: string | null
+          new_id: string | null
           pet_friendly: boolean | null
           published: boolean | null
           type: Database["public"]["Enums"]["rooms"] | null
@@ -118,11 +118,11 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string | null
-          desk_limit?: number
           floor?: number | null
           has_elevator?: boolean | null
-          id?: number
+          id?: string
           name?: string | null
+          new_id?: string | null
           pet_friendly?: boolean | null
           published?: boolean | null
           type?: Database["public"]["Enums"]["rooms"] | null
@@ -135,11 +135,11 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string | null
-          desk_limit?: number
           floor?: number | null
           has_elevator?: boolean | null
-          id?: number
+          id?: string
           name?: string | null
+          new_id?: string | null
           pet_friendly?: boolean | null
           published?: boolean | null
           type?: Database["public"]["Enums"]["rooms"] | null
@@ -161,15 +161,15 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
-          room_id: number | null
+          room_id: string
           status: Database["public"]["Enums"]["status"]
           updated_at: string | null
         }
         Insert: {
           created_at?: string
           deleted_at?: string | null
-          id: string
-          room_id?: number | null
+          id?: string
+          room_id: string
           status?: Database["public"]["Enums"]["status"]
           updated_at?: string | null
         }
@@ -177,7 +177,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
-          room_id?: number | null
+          room_id?: string
           status?: Database["public"]["Enums"]["status"]
           updated_at?: string | null
         }

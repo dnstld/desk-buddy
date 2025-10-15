@@ -16,6 +16,29 @@ export function useRooms() {
     }
 
     fetchRooms();
+
+    // Subscribe to real-time changes on room table
+    const subscription = supabase
+      .channel("rooms-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: "public",
+          table: "room",
+        },
+        (payload) => {
+          console.log("Room change detected:", payload);
+          // Refetch rooms when any change occurs
+          fetchRooms();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [user]);
 
   const fetchRooms = async () => {
@@ -31,7 +54,7 @@ export function useRooms() {
           *,
           seats:seat(
             *,
-            reservations(
+            reservation(
               *,
               user(*)
             )
@@ -39,7 +62,7 @@ export function useRooms() {
         `
         )
         .is("deleted_at", null)
-        .eq("published", true)
+        // Show all rooms (both published and unpublished)
         .order("floor", { ascending: true })
         .order("name", { ascending: true });
 

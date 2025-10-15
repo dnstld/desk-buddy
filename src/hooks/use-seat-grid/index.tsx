@@ -29,8 +29,9 @@ export function useSeatGrid({ seats, meeting = false }: UseSeatGridProps) {
       if (index >= seatData.seatCount) return null;
 
       const seat = seats[index];
-      const isOccupied = seat?.reservations.length > 0;
-      const user = seat?.reservations[0]?.user;
+      // Use 'reservation' (singular) to match database schema
+      const isOccupied = seat?.reservation && seat.reservation.length > 0;
+      const user = seat?.reservation?.[0]?.user;
 
       return {
         seat,

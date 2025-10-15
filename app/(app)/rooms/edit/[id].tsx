@@ -1,96 +1,77 @@
 import RoomForm from "@/src/components/room-form";
-import ConfirmationDialog from "@/src/components/ui/confirmation-dialog";
-import { useRoomActions } from "@/src/hooks/use-room-actions";
+import { useRoomMutations } from "@/src/hooks/use-room-mutations";
+import { supabase } from "@/src/lib/supabase";
 import { RoomWithDetails } from "@/src/types/room";
 import { RoomFormData } from "@/src/validations/room-form";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 export default function EditRoom() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [room, setRoom] = useState<RoomWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { updateRoom } = useRoomMutations();
 
-  // Mock room data - replace with actual data fetching
+  // Fetch room data from database
   useEffect(() => {
-    // TODO: Replace with actual API call to fetch room by ID
-    const mockRoom: RoomWithDetails = {
-      id: parseInt(id as string),
-      room_name: `Room ${id}`,
-      color: "#3B82F6",
-      company_branch_id: 1,
-      created_at: new Date().toISOString(),
-      description: "Sample room description",
-      desk_limit: 10,
-      elevator: true,
-      floor: 2,
-      published: false,
-      seat_limit: 12,
-      wheelchair: true,
-      pet_friendly: true,
-      meeting: false,
-      seats: [],
+    const fetchRoom = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const { data: roomData, error: roomError } = await supabase
+          .from("room")
+          .select(
+            `
+            *,
+            seats:seat(
+              *,
+              reservation(
+                *,
+                user(*)
+              )
+            )
+          `
+          )
+          .eq("id", id) // id is already a UUID string
+          .is("deleted_at", null)
+          .single();
+
+        if (roomError) throw roomError;
+        if (!roomData) throw new Error("Room not found");
+
+        setRoom(roomData);
+      } catch (err) {
+        console.error("Error fetching room:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch room");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setTimeout(() => {
-      setRoom(mockRoom);
-      setLoading(false);
-    }, 1000);
+    if (id) {
+      fetchRoom();
+    }
   }, [id]);
 
-  const { confirmationProps } = useRoomActions({
-    room: room!,
-    onRoomUpdate: (updatedRoom) => {
-      setRoom(updatedRoom);
-    },
-  });
-
   const handleSubmit = async (data: RoomFormData) => {
-    setIsSubmitting(true);
     try {
-      // Here you would call your API to update the room
       console.log("Updating room with data:", data);
 
-      // Simulate API call with potential failure (for testing error handling)
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Simulate success most of the time, but occasionally fail for testing
-          const shouldSucceed = Math.random() > 0.2; // 80% success rate
-          if (shouldSucceed) {
-            console.log("✅ Simulated API success");
-            resolve(true);
-          } else {
-            console.log(
-              "❌ Simulated API failure (this is expected for testing)"
-            );
-            reject(new Error("Server error: Unable to update room"));
-          }
-        }, 1000);
-      });
+      // Update the room using Supabase
+      const updatedRoom = await updateRoom(id as string, data);
 
       // Update local room data
-      if (room) {
-        const updatedRoom: RoomWithDetails = {
-          ...room,
-          room_name: data.name,
-          description: data.description || null,
-          seat_limit: data.totalSeats,
-          meeting: data.meeting,
-          wheelchair: data.wheelchair,
-          elevator: data.elevator,
-          pet_friendly: data.petFriendly,
-          floor: data.floor,
-          color: data.color,
-        };
-        setRoom(updatedRoom);
+      if (updatedRoom) {
+        setRoom(updatedRoom as RoomWithDetails);
       }
+
+      console.log("✅ Room updated successfully!");
     } catch (error) {
       console.error("Failed to update room:", error);
       throw error; // Re-throw to let RoomForm handle the error display
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -109,10 +90,23 @@ export default function EditRoom() {
     router.back();
   };
 
-  if (loading || !room) {
+  if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-lg text-gray-500">Loading room...</Text>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error || !room) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white p-4">
+        <Text className="text-red-500 text-center mb-4">
+          {error || "Room not found"}
+        </Text>
+        <Text className="text-blue-500" onPress={() => router.back()}>
+          Go Back
+        </Text>
       </View>
     );
   }
@@ -125,11 +119,7 @@ export default function EditRoom() {
         onSuccess={handleSuccess}
         onCancel={handleCancel}
         submitButtonText="Save"
-        isLoading={isSubmitting}
       />
-
-      {/* Confirmation Dialog */}
-      <ConfirmationDialog {...confirmationProps} />
     </View>
   );
 }

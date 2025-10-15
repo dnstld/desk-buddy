@@ -66,15 +66,15 @@ export default function RoomForm({
       ...defaultRoomFormValues,
       // Convert room data to form data if editing
       ...(initialData && {
-        name: initialData.room_name || "",
+        name: initialData.name || "",
         description: initialData.description || "",
-        totalSeats: initialData.seat_limit || 1,
-        meeting: initialData.meeting || false,
-        wheelchair: initialData.wheelchair || false,
-        elevator: initialData.elevator || false,
+        totalSeats: initialData.capacity || 1,
+        meeting: initialData.type === "meeting",
+        wheelchair: initialData.wheelchair_accessible || false,
+        elevator: initialData.has_elevator || false,
         petFriendly: initialData.pet_friendly || false,
         floor: initialData.floor || 1,
-        color: initialData.color || themeColors.primary,
+        color: themeColors.primary, // Default color since it's not in the database
       }),
     },
   });
