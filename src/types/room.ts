@@ -1,50 +1,18 @@
-// React Native types based on the NextJS project
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar_url?: string;
-  company_id: number;
-  created_at: string;
-  deleted_at?: string | null;
-}
+import { Database } from "@/supabase/types";
 
-export interface Reservation {
-  id: number;
-  user: User;
-  seat_id: number;
-  user_id: string;
-  created_at: string;
-  deleted_at?: string | null;
-  reservation_date: string;
-}
+// Use Supabase database types directly
+export type User = Database["public"]["Tables"]["user"]["Row"];
 
-export interface Seat {
-  id: number;
-  room_id: number;
-  created_at: string;
-  reservations: Reservation[];
-}
+export type Reservation = Database["public"]["Tables"]["reservations"]["Row"] & {
+  user?: User;
+};
 
-export interface Room {
-  id: number;
-  color: string;
-  company_branch_id: number;
-  created_at: string;
-  deleted_at?: string | null;
-  description?: string | null;
-  desk_limit: number;
-  elevator: boolean;
-  floor: number;
-  height?: number | null;
-  published: boolean;
-  room_name: string;
-  seat_limit: number;
-  wheelchair: boolean;
-  pet_friendly?: boolean;
-  width?: number | null;
-  meeting?: boolean;
-  seats: Seat[];
-}
+export type Seat = Database["public"]["Tables"]["seat"]["Row"] & {
+  reservations?: Reservation[];
+};
+
+export type Room = Database["public"]["Tables"]["room"]["Row"] & {
+  seats?: Seat[];
+};
 
 export type RoomWithDetails = Room;

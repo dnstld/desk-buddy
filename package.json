@@ -19,7 +19,7 @@
     "supabase:db:push": "supabase db push",
     "supabase:db:pull": "supabase db pull",
     "supabase:migration:new": "supabase migration new",
-    "supabase:gen:types": "supabase gen types typescript --local > supabase/types.ts"
+    "supabase:gen:types": "supabase gen types typescript --project-id ivopkkjuoukkuatypfbd > supabase/types.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

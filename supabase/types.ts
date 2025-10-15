@@ -49,6 +49,148 @@ export type Database = {
           },
         ]
       }
+      reservations: {
+        Row: {
+          booking_date: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          seat_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          booking_date?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          seat_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          booking_date?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          seat_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "seat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room: {
+        Row: {
+          capacity: number | null
+          company_id: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          desk_limit: number
+          floor: number | null
+          has_elevator: boolean | null
+          id: number
+          name: string | null
+          pet_friendly: boolean | null
+          published: boolean | null
+          type: Database["public"]["Enums"]["rooms"] | null
+          updated_at: string | null
+          wheelchair_accessible: boolean | null
+        }
+        Insert: {
+          capacity?: number | null
+          company_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          desk_limit?: number
+          floor?: number | null
+          has_elevator?: boolean | null
+          id?: number
+          name?: string | null
+          pet_friendly?: boolean | null
+          published?: boolean | null
+          type?: Database["public"]["Enums"]["rooms"] | null
+          updated_at?: string | null
+          wheelchair_accessible?: boolean | null
+        }
+        Update: {
+          capacity?: number | null
+          company_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          desk_limit?: number
+          floor?: number | null
+          has_elevator?: boolean | null
+          id?: number
+          name?: string | null
+          pet_friendly?: boolean | null
+          published?: boolean | null
+          type?: Database["public"]["Enums"]["rooms"] | null
+          updated_at?: string | null
+          wheelchair_accessible?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seat: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          room_id: number | null
+          status: Database["public"]["Enums"]["status"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          room_id?: number | null
+          status?: Database["public"]["Enums"]["status"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          room_id?: number | null
+          status?: Database["public"]["Enums"]["status"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seat_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user: {
         Row: {
           auth_id: string | null
@@ -96,6 +238,8 @@ export type Database = {
     }
     Enums: {
       roles: "owner" | "manager" | "member"
+      rooms: "workspace" | "meeting"
+      status: "available" | "unavailable" | "partial"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -224,6 +368,8 @@ export const Constants = {
   public: {
     Enums: {
       roles: ["owner", "manager", "member"],
+      rooms: ["workspace", "meeting"],
+      status: ["available", "unavailable", "partial"],
     },
   },
 } as const
