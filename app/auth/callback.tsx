@@ -48,7 +48,7 @@ export default function AuthCallbackScreen() {
             if (result.success) {
               console.log("✅ User processed successfully");
               // Redirect to rooms page
-              router.replace("/rooms");
+              router.replace("/(app)/rooms" as any);
             } else {
               console.log("❌ Error processing user:", result.error);
               setHasError(true);
