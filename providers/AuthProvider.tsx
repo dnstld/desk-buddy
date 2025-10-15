@@ -2,7 +2,7 @@ import { Session, User } from "@supabase/supabase-js";
 import * as Linking from "expo-linking";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../src/lib/supabase";
 
 interface AuthContextType {
   session: Session | null;

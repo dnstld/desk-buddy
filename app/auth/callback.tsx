@@ -2,15 +2,18 @@
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import { router } from "expo-router/build/imperative-api";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
 import { handleUserSignIn } from "../../src/lib/auth-service";
+
+type ErrorType = "used" | "expired" | "invalid" | "generic";
+
+interface ErrorContent {
+  icon: string;
+  title: string;
+  message: string;
+  instruction: string;
+}
 
 export default function AuthCallbackScreen() {
   const params = useLocalSearchParams();
@@ -43,10 +46,7 @@ export default function AuthCallbackScreen() {
             const result = await handleUserSignIn();
 
             if (result.success) {
-              console.log(
-                "✅ User processed successfully:",
-                result.isNewUser ? "new user" : "existing user"
-              );
+              console.log("✅ User processed successfully");
               // Redirect to rooms page
               router.replace("/rooms");
             } else {
@@ -85,43 +85,43 @@ export default function AuthCallbackScreen() {
     router.replace("/(auth)/login");
   };
 
-  const getErrorContent = () => {
-    switch (authErrorType) {
-      case "used":
-        return {
-          icon: "🔄",
-          title: "Magic Link Already Used",
-          message:
-            "This magic link has already been used and is no longer valid.",
-          instruction:
-            "Please enter your email again to receive a new magic link.",
-        };
-      case "expired":
-        return {
-          icon: "⏰",
-          title: "Magic Link Expired",
-          message:
-            authError || "Your magic link has expired or is no longer valid.",
-          instruction:
-            "Please enter your email again to receive a new magic link.",
-        };
-      case "invalid":
-        return {
-          icon: "❌",
-          title: "Invalid Magic Link",
-          message: "This magic link is not valid or has been corrupted.",
-          instruction:
-            "Please enter your email again to receive a new magic link.",
-        };
-      default:
-        return {
-          icon: "⏰",
-          title: "Magic Link Issue",
-          message: authError || "There was an issue with your magic link.",
-          instruction:
-            "Please enter your email again to receive a new magic link.",
-        };
-    }
+  const getErrorContent = (): ErrorContent => {
+    const errorType = (authErrorType || "generic") as ErrorType;
+
+    const errorMap: Record<ErrorType, ErrorContent> = {
+      used: {
+        icon: "🔄",
+        title: "Magic Link Already Used",
+        message:
+          "This magic link has already been used and is no longer valid.",
+        instruction:
+          "Please enter your email again to receive a new magic link.",
+      },
+      expired: {
+        icon: "⏰",
+        title: "Magic Link Expired",
+        message:
+          authError || "Your magic link has expired or is no longer valid.",
+        instruction:
+          "Please enter your email again to receive a new magic link.",
+      },
+      invalid: {
+        icon: "❌",
+        title: "Invalid Magic Link",
+        message: "This magic link is not valid or has been corrupted.",
+        instruction:
+          "Please enter your email again to receive a new magic link.",
+      },
+      generic: {
+        icon: "⏰",
+        title: "Magic Link Issue",
+        message: authError || "There was an issue with your magic link.",
+        instruction:
+          "Please enter your email again to receive a new magic link.",
+      },
+    };
+
+    return errorMap[errorType];
   };
 
   // Show error screen if there's an error
@@ -130,13 +130,24 @@ export default function AuthCallbackScreen() {
     console.log("🚨 Showing error screen:", errorContent.title);
 
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorIcon}>{errorContent.icon}</Text>
-        <Text style={styles.errorTitle}>{errorContent.title}</Text>
-        <Text style={styles.errorMessage}>{errorContent.message}</Text>
-        <Text style={styles.instructionText}>{errorContent.instruction}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-          <Text style={styles.retryButtonText}>Get New Magic Link</Text>
+      <View className="flex-1 justify-center items-center bg-gray-100 p-5">
+        <Text className="text-5xl mb-5">{errorContent.icon}</Text>
+        <Text className="text-2xl font-bold mb-4 text-red-600 text-center">
+          {errorContent.title}
+        </Text>
+        <Text className="text-base text-gray-600 text-center mb-3 leading-6">
+          {errorContent.message}
+        </Text>
+        <Text className="text-base text-gray-700 text-center mb-8 font-medium leading-6">
+          {errorContent.instruction}
+        </Text>
+        <TouchableOpacity
+          className="bg-blue-500 px-6 py-3 rounded-lg min-w-[200px]"
+          onPress={handleRetry}
+        >
+          <Text className="text-white text-base font-semibold text-center">
+            Get New Magic Link
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -145,71 +156,14 @@ export default function AuthCallbackScreen() {
   // Show loading screen while processing
   console.log("⏳ Showing loading screen while processing auth");
   return (
-    <View style={styles.container}>
+    <View className="flex-1 justify-center items-center bg-gray-100 p-5">
       <ActivityIndicator size="large" color="#3b82f6" />
-      <Text style={styles.title}>Authenticating...</Text>
-      <Text style={styles.subtitle}>Please wait while we sign you in</Text>
+      <Text className="text-2xl font-bold mt-5 mb-2.5 text-gray-800">
+        Authenticating...
+      </Text>
+      <Text className="text-base text-gray-600 text-center">
+        Please wait while we sign you in
+      </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 10,
-    color: "#333",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-  },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: 20,
-  },
-  errorTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#dc2626",
-    textAlign: "center",
-  },
-  errorMessage: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 12,
-    lineHeight: 22,
-  },
-  instructionText: {
-    fontSize: 16,
-    color: "#374151",
-    textAlign: "center",
-    marginBottom: 32,
-    fontWeight: "500",
-    lineHeight: 22,
-  },
-  retryButton: {
-    backgroundColor: "#3b82f6",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    minWidth: 200,
-  },
-  retryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-});
