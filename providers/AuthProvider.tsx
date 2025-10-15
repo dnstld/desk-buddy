@@ -3,6 +3,7 @@ import * as Linking from "expo-linking";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { supabase } from "../src/lib/supabase";
+import { logger } from "../src/utils/logger";
 
 interface AuthContextType {
   session: Session | null;
@@ -97,7 +98,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           const linkId = accessToken ? accessToken.substring(0, 20) : url;
           if (linkId && usedMagicLinks.has(linkId)) {
-            console.log("Detected used magic link, setting error state");
+            logger.info("Detected used magic link, setting error state");
             setAuthError(
               "This magic link has already been used. Please enter your email again to receive a new link."
             );
@@ -106,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
 
           if (expiresAt && expiresAt < Math.floor(Date.now() / 1000)) {
-            console.log(
+            logger.info(
               "Detected expired token timestamp, setting error state"
             );
             setAuthError(
@@ -151,7 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setAuthErrorType(null);
             }
           } catch (error) {
-            console.error("Error processing magic link:", error);
+            logger.error("Error processing magic link:", error);
             setAuthError(
               "Your magic link has expired. Please enter your email again to receive a new link."
             );
@@ -159,10 +160,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             Alert.alert("Authentication Error", "Failed to process magic link");
           }
         } else {
-          console.log("No auth tokens found in URL:", url);
+          logger.debug("No auth tokens found in URL:", url);
         }
       } catch (error) {
-        console.error("Error parsing deep link:", error);
+        logger.error("Error parsing deep link:", error);
       }
     };
 
@@ -182,14 +183,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInWithOtp = async (email: string) => {
     if (currentEmail === email) {
       setUsedMagicLinks(new Set());
-      console.log("Cleared previous magic links for same email");
+      logger.info("Cleared previous magic links for same email");
     }
 
     setCurrentEmail(email);
 
-    // For development with Expo Go
-    const redirectUrl = "exp://192.168.178.53:8081/--/auth/callback";
-    console.log("Sending magic link with redirect URL:", redirectUrl);
+    // Create dynamic redirect URL based on environment
+    const redirectUrl = __DEV__
+      ? Linking.createURL("/auth/callback")
+      : (process.env.EXPO_PUBLIC_REDIRECT_URL || "") + "/auth/callback";
+
+    logger.info("Sending magic link with redirect URL:", redirectUrl);
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -202,13 +206,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw error;
     }
 
-    console.log("Magic link sent successfully with redirect:", redirectUrl);
+    logger.success("Magic link sent successfully with redirect:", redirectUrl);
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error("Error signing out:", error);
+      logger.error("Error signing out:", error);
       Alert.alert("Error", "Failed to sign out");
     } else {
       setUsedMagicLinks(new Set());

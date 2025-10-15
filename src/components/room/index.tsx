@@ -5,6 +5,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
+import { logger } from "../../utils/logger";
 import SeatGrid from "../seat-grid";
 import Button from "../ui/button";
 import Chip from "../ui/chip";
@@ -89,13 +90,13 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
         "success"
       );
 
-      console.log(
+      logger.success(
         `Room "${room.name}" ${
           room.published ? "unpublished" : "published"
         } successfully`
       );
     } catch (error) {
-      console.error("Failed to publish/unpublish room:", error);
+      logger.error("Failed to publish/unpublish room:", error);
       showToastNotification(
         `Failed to ${
           room.published ? "unpublish" : "publish"
@@ -123,9 +124,9 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
       );
 
       // The real-time subscription will automatically remove the room from the list
-      console.log(`Room "${room.name}" deleted successfully`);
+      logger.success(`Room "${room.name}" deleted successfully`);
     } catch (error) {
-      console.error("Failed to delete room:", error);
+      logger.error("Failed to delete room:", error);
       showToastNotification(
         "Failed to delete room. Please try again.",
         "error"

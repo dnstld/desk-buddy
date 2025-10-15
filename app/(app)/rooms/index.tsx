@@ -10,6 +10,7 @@ export default function Rooms() {
   const { rooms, loading, error } = useRooms();
 
   const handleCreateRoom = () => {
+    // Type assertion needed due to Expo Router's strict typing
     router.push("/(app)/rooms/create/" as any);
   };
 

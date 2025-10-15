@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { supabase } from './supabase';
 
 export interface HandleUserSignInResponse {
@@ -35,10 +36,10 @@ export async function handleUserSignIn(): Promise<HandleUserSignInResponse> {
 
     // TODO: Remove in production - JWT token logging for testing only
     if (__DEV__) {
-      console.log('🔑 JWT Token (for testing):', session.access_token.substring(0, 50) + '...');
+      logger.debug('JWT Token (for testing):', session.access_token.substring(0, 50) + '...');
     }
     
-    console.log('Calling edge function to handle user sign-in...');
+    logger.info('Calling edge function to handle user sign-in...');
 
     // Call the edge function with the user's access token
     const { data, error } = await supabase.functions.invoke<HandleUserSignInResponse>(
@@ -51,7 +52,7 @@ export async function handleUserSignIn(): Promise<HandleUserSignInResponse> {
     );
 
     if (error) {
-      console.error('Edge function error:', error);
+      logger.error('Edge function error:', error);
       return {
         success: false,
         error: error.message || 'Edge function failed',
@@ -60,14 +61,14 @@ export async function handleUserSignIn(): Promise<HandleUserSignInResponse> {
 
     // Check if data contains an error
     if (data && !data.success) {
-      console.error('Edge function returned error:', data);
+      logger.error('Edge function returned error:', data);
       return data;
     }
 
-    console.log('Edge function response:', data);
+    logger.info('Edge function response:', data);
     return data as HandleUserSignInResponse;
   } catch (error) {
-    console.error('Error in handleUserSignIn:', error);
+    logger.error('Error in handleUserSignIn:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',

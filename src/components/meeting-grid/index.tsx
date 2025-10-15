@@ -1,21 +1,36 @@
 import React from "react";
-import { ScrollView, View } from "react-native";
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  View,
+} from "react-native";
+import { Seat as SeatType, User } from "../../types/room";
 import PaginationIndicator from "../pagination-indicator";
 import Seat from "../seat";
 
+interface SeatInfo {
+  seat: SeatType;
+  isOccupied: boolean;
+  user?: User;
+  seatIndex: number;
+}
+
+interface SeatData {
+  seatCount: number;
+  seatsPerPage: number;
+  totalPages: number;
+  hasMultiplePages: boolean;
+}
+
 interface MeetingGridProps {
-  seats: any[];
-  processSeat: (index: number) => any;
-  seatData: {
-    seatCount: number;
-    seatsPerPage: number;
-    totalPages: number;
-    hasMultiplePages: boolean;
-  };
+  seats: SeatType[];
+  processSeat: (index: number) => SeatInfo | null;
+  seatData: SeatData;
   currentPage: number;
   containerWidth: number;
-  onScroll: (event: any) => void;
-  onLayout: (event: any) => void;
+  onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onLayout: (event: { nativeEvent: { layout: { width: number } } }) => void;
 }
 
 export default function MeetingGrid({

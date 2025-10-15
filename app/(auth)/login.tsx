@@ -11,6 +11,8 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
+import { getErrorMessage } from "../../src/utils/error-handler";
+import { logger } from "../../src/utils/logger";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -40,9 +42,10 @@ export default function LoginScreen() {
         `We've sent a magic link to ${email}. Click the link in your email to sign in.`,
         [{ text: "OK" }]
       );
-    } catch (error: any) {
-      console.error("Sign in error:", error);
-      Alert.alert("Error", error.message || "Failed to send magic link");
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, "Failed to send magic link");
+      logger.error("Sign in error:", error);
+      Alert.alert("Error", errorMessage);
     } finally {
       setLoading(false);
     }

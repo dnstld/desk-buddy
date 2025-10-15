@@ -1,10 +1,11 @@
-// Import from build paths to avoid TypeScript definition issues with pnpm
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import { router } from "expo-router/build/imperative-api";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
+import { TIMEOUTS } from "../../src/constants/config";
 import { handleUserSignIn } from "../../src/lib/auth-service";
+import { logger } from "../../src/utils/logger";
 
 type ErrorType = "used" | "expired" | "invalid" | "generic";
 
@@ -22,13 +23,25 @@ export default function AuthCallbackScreen() {
   const [hasError, setHasError] = useState(false);
   const [isProcessingUser, setIsProcessingUser] = useState(false);
 
+  // Add timeout protection for loading state
   useEffect(() => {
-    console.log("Auth callback screen params:", params);
+    const timeout = setTimeout(() => {
+      if (loading && !session && !authError) {
+        logger.warn("Auth callback timeout - redirecting to login");
+        setHasError(true);
+      }
+    }, TIMEOUTS.AUTH_LOADING);
+
+    return () => clearTimeout(timeout);
+  }, [loading, session, authError]);
+
+  useEffect(() => {
+    logger.debug("Auth callback screen params:", params);
 
     // Check for auth error from provider (this is the primary method)
     if (authError) {
-      console.log(
-        "✅ Callback screen: Found auth error from provider:",
+      logger.info(
+        "Callback screen: Found auth error from provider:",
         authError
       );
       setHasError(true);
@@ -42,19 +55,19 @@ export default function AuthCallbackScreen() {
         const processUser = async () => {
           setIsProcessingUser(true);
           try {
-            console.log("✅ Auth successful, processing user...");
+            logger.success("Auth successful, processing user...");
             const result = await handleUserSignIn();
 
             if (result.success) {
-              console.log("✅ User processed successfully");
+              logger.success("User processed successfully");
               // Redirect to rooms page
-              router.replace("/(app)/rooms" as any);
+              router.replace("/(app)/rooms");
             } else {
-              console.log("❌ Error processing user:", result.error);
+              logger.error("Error processing user:", result.error);
               setHasError(true);
             }
           } catch (error) {
-            console.error("❌ Error in user processing:", error);
+            logger.error("Error in user processing:", error);
             setHasError(true);
           } finally {
             setIsProcessingUser(false);
@@ -66,12 +79,12 @@ export default function AuthCallbackScreen() {
         // Give AuthProvider time to process deep link, then show error if needed
         const timeoutId = setTimeout(() => {
           if (!authError && !session) {
-            console.log(
-              "❌ No auth success after timeout, showing generic error"
+            logger.error(
+              "No auth success after timeout, showing generic error"
             );
             setHasError(true);
           }
-        }, 2000);
+        }, TIMEOUTS.AUTH_ERROR_DELAY);
 
         return () => clearTimeout(timeoutId);
       }
@@ -79,7 +92,7 @@ export default function AuthCallbackScreen() {
   }, [session, loading, params, authError, isProcessingUser]);
 
   const handleRetry = () => {
-    console.log("🔄 User clicked retry, clearing errors and going to login");
+    logger.info("User clicked retry, clearing errors and going to login");
     clearAuthError();
     setHasError(false);
     router.replace("/(auth)/login");
@@ -127,7 +140,7 @@ export default function AuthCallbackScreen() {
   // Show error screen if there's an error
   if (hasError || authError) {
     const errorContent = getErrorContent();
-    console.log("🚨 Showing error screen:", errorContent.title);
+    logger.warn("Showing error screen:", errorContent.title);
 
     return (
       <View className="flex-1 justify-center items-center bg-gray-100 p-5">

@@ -1,14 +1,15 @@
+import { FLOOR_CONFIG, SEATS_CONFIG, VALIDATION } from "@/src/constants/config";
 import { z } from "zod";
 
 export const roomFormSchema = z.object({
   name: z
     .string()
-    .min(1, "Room name is required")
-    .max(50, "Room name must be less than 50 characters"),
+    .min(VALIDATION.ROOM_NAME.MIN, "Room name is required")
+    .max(VALIDATION.ROOM_NAME.MAX, `Room name must be less than ${VALIDATION.ROOM_NAME.MAX} characters`),
   
   description: z
     .string()
-    .max(150, "Description must be less than 150 characters")
+    .max(VALIDATION.ROOM_DESCRIPTION.MAX, `Description must be less than ${VALIDATION.ROOM_DESCRIPTION.MAX} characters`)
     .optional(),
   
   meeting: z.boolean(),
@@ -16,8 +17,8 @@ export const roomFormSchema = z.object({
   totalSeats: z
     .number({ message: "Total seats is required" })
     .int("Total seats must be a whole number")
-    .min(1, "Total seats must be at least 1")
-    .max(100, "Total seats cannot exceed 100"),
+    .min(SEATS_CONFIG.MIN, `Total seats must be at least ${SEATS_CONFIG.MIN}`)
+    .max(SEATS_CONFIG.MAX, `Total seats cannot exceed ${SEATS_CONFIG.MAX}`),
   
   // Amenities
   wheelchair: z.boolean(),
@@ -28,19 +29,19 @@ export const roomFormSchema = z.object({
   floor: z
     .number({ message: "Floor is required" })
     .int("Floor must be a whole number")
-    .min(-5, "Floor must be at least B5")
-    .max(50, "Floor cannot exceed 50"),
+    .min(FLOOR_CONFIG.MIN, `Floor must be at least B${Math.abs(FLOOR_CONFIG.MIN)}`)
+    .max(FLOOR_CONFIG.MAX, `Floor cannot exceed ${FLOOR_CONFIG.MAX}`),
     
   color: z.string(),
 })
 .refine((data) => {
   // Meeting rooms must have at least 2 seats
-  if (data.meeting && data.totalSeats < 2) {
+  if (data.meeting && data.totalSeats < VALIDATION.MIN_MEETING_SEATS) {
     return false;
   }
   return true;
 }, {
-  message: "Meeting rooms must have at least 2 seats",
+  message: `Meeting rooms must have at least ${VALIDATION.MIN_MEETING_SEATS} seats`,
   path: ["totalSeats"],
 });
 

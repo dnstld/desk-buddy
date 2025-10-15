@@ -1,3 +1,4 @@
+import { SEATS_CONFIG } from "@/src/constants/config";
 import { Seat } from "@/src/types/room";
 import { useMemo, useState } from "react";
 
@@ -12,7 +13,9 @@ export function useSeatGrid({ seats, meeting = false }: UseSeatGridProps) {
 
   const seatData = useMemo(() => {
     const seatCount = seats.length;
-    const seatsPerPage = meeting ? 8 : 12;
+    const seatsPerPage = meeting
+      ? SEATS_CONFIG.PER_PAGE.MEETING
+      : SEATS_CONFIG.PER_PAGE.WORKSPACE;
     const totalPages = Math.ceil(seatCount / seatsPerPage);
 
     return {
@@ -46,14 +49,18 @@ export function useSeatGrid({ seats, meeting = false }: UseSeatGridProps) {
     setCurrentPage(pageIndex);
   };
 
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: {
+    nativeEvent: { contentOffset: { x: number } };
+  }) => {
     const pageIndex = Math.round(
       event.nativeEvent.contentOffset.x / containerWidth
     );
     setCurrentPage(pageIndex);
   };
 
-  const handleLayout = (event: any) => {
+  const handleLayout = (event: {
+    nativeEvent: { layout: { width: number } };
+  }) => {
     const { width } = event.nativeEvent.layout;
     setContainerWidth(width);
   };

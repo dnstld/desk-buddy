@@ -1,5 +1,5 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import resolveConfig from "tailwindcss/resolveConfig";
 import { AuthProvider, useAuth } from "../providers/AuthProvider";
@@ -15,40 +15,32 @@ function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
 
-  const handleAuthRedirect = useCallback(() => {
+  useEffect(() => {
     if (loading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
     const inAppGroup = segments[0] === "(app)";
-    const inCallbackScreen =
+    const isCallbackScreen =
       segments[0] === "auth" && segments[1] === "callback";
 
     // Don't redirect if we're on the callback screen (let it handle errors)
-    if (inCallbackScreen) {
-      console.log("📍 Layout: On callback screen, skipping redirect");
+    if (isCallbackScreen) {
       return;
     }
 
     // Don't redirect if there's an auth error (let error screen show)
     if (authError) {
-      console.log("📍 Layout: Auth error present, skipping redirect");
       return;
     }
 
     if (session && inAuthGroup) {
-      // Redirect authenticated users away from auth screens to rooms
-      console.log("📍 Layout: Redirecting authenticated user to rooms");
-      router.replace("/(app)/" as any);
+      // Redirect authenticated users away from auth screens to app
+      router.replace("/(app)/rooms");
     } else if (!session && !inAuthGroup && !inAppGroup) {
       // Redirect unauthenticated users to auth screens
-      console.log("📍 Layout: Redirecting unauthenticated user to login");
       router.replace("/(auth)/login");
     }
-  }, [session, loading, segments, router, authError]);
-
-  useEffect(() => {
-    handleAuthRedirect();
-  }, [handleAuthRedirect]);
+  }, [session, loading, authError, router, segments]);
 
   return (
     <Stack
