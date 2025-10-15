@@ -105,7 +105,6 @@ export type Database = {
           has_elevator: boolean | null
           id: string
           name: string | null
-          new_id: string | null
           pet_friendly: boolean | null
           published: boolean | null
           type: Database["public"]["Enums"]["rooms"] | null
@@ -122,7 +121,6 @@ export type Database = {
           has_elevator?: boolean | null
           id?: string
           name?: string | null
-          new_id?: string | null
           pet_friendly?: boolean | null
           published?: boolean | null
           type?: Database["public"]["Enums"]["rooms"] | null
@@ -139,7 +137,6 @@ export type Database = {
           has_elevator?: boolean | null
           id?: string
           name?: string | null
-          new_id?: string | null
           pet_friendly?: boolean | null
           published?: boolean | null
           type?: Database["public"]["Enums"]["rooms"] | null
