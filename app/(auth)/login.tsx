@@ -1,47 +1,43 @@
+import AuthPageWrapper from "@/src/components/auth-page-wrapper";
+import Button from "@/src/components/ui/button";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Controller, useForm } from "react-hook-form";
+import { Alert, Text, TextInput, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
 import { getErrorMessage } from "../../src/utils/error-handler";
 import { logger } from "../../src/utils/logger";
 
+type LoginFormData = {
+  email: string;
+};
+
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const { signInWithOtp, clearAuthError } = useAuth();
 
-  const handleSignIn = async () => {
-    if (!email.trim()) {
-      Alert.alert("Error", "Please enter your email address");
-      return;
-    }
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    reset,
+  } = useForm<LoginFormData>({
+    defaultValues: {
+      email: "",
+    },
+  });
 
-    if (!isValidEmail(email)) {
-      Alert.alert("Error", "Please enter a valid email address");
-      return;
-    }
+  const email = watch("email");
 
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
-    clearAuthError(); // Clear any previous auth errors
+    clearAuthError();
 
     try {
-      await signInWithOtp(email);
+      await signInWithOtp(data.email);
       setEmailSent(true);
-      Alert.alert(
-        "Check your email!",
-        `We've sent a magic link to ${email}. Click the link in your email to sign in.`,
-        [{ text: "OK" }]
-      );
     } catch (error) {
       const errorMessage = getErrorMessage(error, "Failed to send magic link");
       logger.error("Sign in error:", error);
@@ -51,162 +47,102 @@ export default function LoginScreen() {
     }
   };
 
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const handleTryAgain = () => {
     setEmailSent(false);
-    setEmail("");
+    reset();
   };
 
   if (emailSent) {
     return (
-      <View style={styles.container}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Check Your Email</Text>
-          <Text style={styles.subtitle}>
-            We&apos;ve sent a magic link to {email}
-          </Text>
-          <Text style={styles.description}>
-            Click the link in your email to sign in. The email may take a few
-            minutes to arrive.
+      <AuthPageWrapper>
+        <View className="w-full max-w-sm gap-8">
+          <View className="items-center gap-2">
+            <MaterialCommunityIcons
+              name="email-check"
+              size={48}
+              color="lightgreen"
+            />
+
+            <Text className="text-2xl font-bold text-white">
+              Check your inbox
+            </Text>
+          </View>
+
+          <View className="items-center">
+            <Text className="text-white text-center">
+              We’ve sent a magic link to
+            </Text>
+            <Text className="text-lg text-center font-semibold text-white">
+              {email}
+            </Text>
+          </View>
+
+          <Text className="text-sm text-white text-center">
+            Didn’t get the email? Check your spam folder or try again.
           </Text>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
+          <Button
+            title="Try a different email"
             onPress={handleTryAgain}
-          >
-            <Text style={styles.secondaryButtonText}>Try Different Email</Text>
-          </TouchableOpacity>
+            variant="primary"
+            size="md"
+          />
         </View>
-      </View>
+      </AuthPageWrapper>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Desk Buddy</Text>
-        <Text style={styles.subtitle}>Sign in with your email</Text>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email Address</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            placeholderTextColor="#999"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            editable={!loading}
+    <AuthPageWrapper>
+      <View className="w-full max-w-sm gap-8">
+        <View className="gap-2">
+          <Text className="text-base font-semibold text-white">
+            What’s your work email?
+          </Text>
+          <Controller
+            control={control}
+            name="email"
+            rules={{
+              required: "Please enter your email address",
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Please enter a valid email address",
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                className="rounded-lg p-4 bg-white"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="you@company.com"
+                placeholderTextColor="#999"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!loading}
+              />
+            )}
           />
+          {errors.email && (
+            <Text className="text-red-500 text-sm">{errors.email.message}</Text>
+          )}
         </View>
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleSignIn}
+        <Button
+          title="Send magic link"
+          onPress={handleSubmit(onSubmit)}
+          variant="primary"
+          size="md"
           disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text style={styles.buttonText}>Send Magic Link</Text>
-          )}
-        </TouchableOpacity>
+          loading={loading}
+          icon="email-fast"
+        />
 
-        <Text style={styles.helpText}>
-          We&apos;ll send you a secure link to sign in without a password
+        <Text className="text-sm text-center text-white">
+          We’ll send you a secure link to sign in — no password needed
         </Text>
       </View>
-    </KeyboardAvoidingView>
+    </AuthPageWrapper>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
-    color: "#333",
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 40,
-    color: "#666",
-  },
-  description: {
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 30,
-    color: "#666",
-    lineHeight: 22,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#333",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    backgroundColor: "white",
-  },
-  button: {
-    backgroundColor: "#3b82f6",
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#3b82f6",
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  secondaryButtonText: {
-    color: "#3b82f6",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  helpText: {
-    fontSize: 14,
-    textAlign: "center",
-    color: "#666",
-    lineHeight: 20,
-  },
-});

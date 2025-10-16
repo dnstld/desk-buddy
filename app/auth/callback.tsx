@@ -1,8 +1,11 @@
+import Button from "@/src/components/ui/button";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import { router } from "expo-router/build/imperative-api";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { ComponentProps, useEffect, useState } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
+import AuthPageWrapper from "../../src/components/auth-page-wrapper";
 import { TIMEOUTS } from "../../src/constants/config";
 import { handleUserSignIn } from "../../src/lib/auth-service";
 import { logger } from "../../src/utils/logger";
@@ -10,10 +13,9 @@ import { logger } from "../../src/utils/logger";
 type ErrorType = "used" | "expired" | "invalid" | "generic";
 
 interface ErrorContent {
-  icon: string;
+  icon: ComponentProps<typeof MaterialCommunityIcons>["name"];
   title: string;
   message: string;
-  instruction: string;
 }
 
 export default function AuthCallbackScreen() {
@@ -22,6 +24,7 @@ export default function AuthCallbackScreen() {
     useAuth();
   const [hasError, setHasError] = useState(false);
   const [isProcessingUser, setIsProcessingUser] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   // Add timeout protection for loading state
   useEffect(() => {
@@ -38,7 +41,6 @@ export default function AuthCallbackScreen() {
   useEffect(() => {
     logger.debug("Auth callback screen params:", params);
 
-    // Check for auth error from provider (this is the primary method)
     if (authError) {
       logger.info(
         "Callback screen: Found auth error from provider:",
@@ -48,10 +50,8 @@ export default function AuthCallbackScreen() {
       return;
     }
 
-    // Wait for auth to complete, then redirect based on session status
     if (!loading) {
-      if (session && !isProcessingUser) {
-        // User is authenticated, handle user creation/check
+      if (session && !isProcessingUser && !hasRedirected) {
         const processUser = async () => {
           setIsProcessingUser(true);
           try {
@@ -60,7 +60,7 @@ export default function AuthCallbackScreen() {
 
             if (result.success) {
               logger.success("User processed successfully");
-              // Redirect to rooms page
+              setHasRedirected(true);
               router.replace("/(app)/rooms");
             } else {
               logger.error("Error processing user:", result.error);
@@ -76,7 +76,6 @@ export default function AuthCallbackScreen() {
 
         processUser();
       } else if (!session) {
-        // Give AuthProvider time to process deep link, then show error if needed
         const timeoutId = setTimeout(() => {
           if (!authError && !session) {
             logger.error(
@@ -89,7 +88,7 @@ export default function AuthCallbackScreen() {
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [session, loading, params, authError, isProcessingUser]);
+  }, [session, loading, authError, isProcessingUser, hasRedirected, params]);
 
   const handleRetry = () => {
     logger.info("User clicked retry, clearing errors and going to login");
@@ -103,80 +102,81 @@ export default function AuthCallbackScreen() {
 
     const errorMap: Record<ErrorType, ErrorContent> = {
       used: {
-        icon: "🔄",
+        icon: "email-open",
         title: "Magic Link Already Used",
-        message:
-          "This magic link has already been used and is no longer valid.",
-        instruction:
-          "Please enter your email again to receive a new magic link.",
+        message: "This magic link has already been used and is no longer valid",
       },
       expired: {
-        icon: "⏰",
+        icon: "email-off",
         title: "Magic Link Expired",
         message:
-          authError || "Your magic link has expired or is no longer valid.",
-        instruction:
-          "Please enter your email again to receive a new magic link.",
+          authError || "Your magic link has expired or is no longer valid",
       },
       invalid: {
-        icon: "❌",
+        icon: "email-remove",
         title: "Invalid Magic Link",
-        message: "This magic link is not valid or has been corrupted.",
-        instruction:
-          "Please enter your email again to receive a new magic link.",
+        message: "This magic link is not valid or has been corrupted",
       },
       generic: {
-        icon: "⏰",
+        icon: "email-alert",
         title: "Magic Link Issue",
         message: authError || "There was an issue with your magic link.",
-        instruction:
-          "Please enter your email again to receive a new magic link.",
       },
     };
 
     return errorMap[errorType];
   };
 
-  // Show error screen if there's an error
   if (hasError || authError) {
     const errorContent = getErrorContent();
     logger.warn("Showing error screen:", errorContent.title);
 
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100 p-5">
-        <Text className="text-5xl mb-5">{errorContent.icon}</Text>
-        <Text className="text-2xl font-bold mb-4 text-red-600 text-center">
-          {errorContent.title}
-        </Text>
-        <Text className="text-base text-gray-600 text-center mb-3 leading-6">
-          {errorContent.message}
-        </Text>
-        <Text className="text-base text-gray-700 text-center mb-8 font-medium leading-6">
-          {errorContent.instruction}
-        </Text>
-        <TouchableOpacity
-          className="bg-blue-500 px-6 py-3 rounded-lg min-w-[200px]"
-          onPress={handleRetry}
-        >
-          <Text className="text-white text-base font-semibold text-center">
-            Get New Magic Link
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <AuthPageWrapper>
+        <View className="w-full max-w-sm gap-8">
+          <View className="items-center gap-2">
+            <MaterialCommunityIcons
+              name={errorContent.icon}
+              size={48}
+              color={hasError || authError ? "red" : "lightgreen"}
+            />
+
+            <Text className="text-2xl font-bold text-white">
+              {errorContent.title}
+            </Text>
+          </View>
+
+          <View className="items-center">
+            <Text className="text-white text-center">
+              {errorContent.message}
+            </Text>
+          </View>
+
+          <Button
+            title="Get New Magic Link"
+            onPress={handleRetry}
+            variant="primary"
+            size="md"
+            icon="send"
+          />
+        </View>
+      </AuthPageWrapper>
     );
   }
 
-  // Show loading screen while processing
-  console.log("⏳ Showing loading screen while processing auth");
   return (
-    <View className="flex-1 justify-center items-center bg-gray-100 p-5">
-      <ActivityIndicator size="large" color="#3b82f6" />
-      <Text className="text-2xl font-bold mt-5 mb-2.5 text-gray-800">
-        Authenticating...
-      </Text>
-      <Text className="text-base text-gray-600 text-center">
-        Please wait while we sign you in
-      </Text>
-    </View>
+    <AuthPageWrapper>
+      <View className="w-full max-w-sm gap-8">
+        <ActivityIndicator size="large" color="#ffffff" />
+        <View className="gap-2">
+          <Text className="text-2xl font-bold text-white text-center">
+            Checking your credentials
+          </Text>
+          <Text className="text-base text-white text-center">
+            Please wait while we sign you in
+          </Text>
+        </View>
+      </View>
+    </AuthPageWrapper>
   );
 }

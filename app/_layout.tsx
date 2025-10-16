@@ -23,21 +23,19 @@ function RootLayoutNav() {
     const isCallbackScreen =
       segments[0] === "auth" && segments[1] === "callback";
 
-    // Don't redirect if we're on the callback screen (let it handle errors)
     if (isCallbackScreen) {
       return;
     }
 
-    // Don't redirect if there's an auth error (let error screen show)
     if (authError) {
       return;
     }
 
     if (session && inAuthGroup) {
-      // Redirect authenticated users away from auth screens to app
       router.replace("/(app)/rooms");
-    } else if (!session && !inAuthGroup && !inAppGroup) {
-      // Redirect unauthenticated users to auth screens
+    }
+
+    if (!session && !inAuthGroup && !inAppGroup) {
       router.replace("/(auth)/login");
     }
   }, [session, loading, authError, router, segments]);

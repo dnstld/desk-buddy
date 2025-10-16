@@ -1,6 +1,6 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 type ButtonVariant =
   | "primary"
@@ -156,7 +156,7 @@ export default function Button({
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
       disabled={disabled || loading}
       className={`
@@ -166,7 +166,6 @@ export default function Button({
         ${getDisabledStyles()}
         ${className}
       `.trim()}
-      activeOpacity={0.7}
     >
       <View className="flex-row items-center justify-center gap-2">
         {icon && !loading && (
@@ -192,9 +191,9 @@ export default function Button({
             ${getTextSizeStyles()}
           `.trim()}
         >
-          {loading ? "Loading..." : title}
+          {!loading && title}
         </Text>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
