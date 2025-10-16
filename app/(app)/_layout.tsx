@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs } from "expo-router";
 import React from "react";
 import AppHeader from "../../src/components/app-header";
@@ -29,7 +29,11 @@ export default function AppLayout() {
         options={{
           title: "Rooms",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="business-outline" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="dots-grid"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -38,7 +42,11 @@ export default function AppLayout() {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid-outline" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="chart-bar"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -47,7 +55,11 @@ export default function AppLayout() {
         options={{
           title: "Users",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="account-multiple"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -56,7 +68,7 @@ export default function AppLayout() {
         options={{
           title: "Settings",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),
         }}
       />
