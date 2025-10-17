@@ -68,7 +68,7 @@ export function useRoomActions({ room, onRoomUpdate }: UseRoomActionsProps) {
       router.back();
 
       // You might want to show a success toast here
-      console.log(`Room "${room.room_name}" deleted successfully`);
+      console.log(`Room "${room.name}" deleted successfully`);
     } catch (error) {
       console.error("Failed to delete room:", error);
       setConfirmationState((prev) => ({ ...prev, loading: false }));
@@ -96,7 +96,7 @@ export function useRoomActions({ room, onRoomUpdate }: UseRoomActionsProps) {
       hideConfirmation();
 
       // You might want to show a success toast here
-      console.log(`Room "${room.room_name}" published successfully`);
+      console.log(`Room "${room.name}" published successfully`);
     } catch (error) {
       console.error("Failed to publish room:", error);
       setConfirmationState((prev) => ({ ...prev, loading: false }));
@@ -125,7 +125,7 @@ export function useRoomActions({ room, onRoomUpdate }: UseRoomActionsProps) {
         return {
           ...baseProps,
           title: "Delete Room",
-          message: `Are you sure you want to delete "${room.room_name}"? This action cannot be undone.`,
+          message: `Are you sure you want to delete "${room.name}"? This action cannot be undone.`,
           confirmText: "Delete",
           confirmVariant: "danger" as const,
           icon: "delete" as const,
@@ -134,7 +134,7 @@ export function useRoomActions({ room, onRoomUpdate }: UseRoomActionsProps) {
         return {
           ...baseProps,
           title: "Publish Room",
-          message: `Are you sure you want to publish "${room.room_name}"? This will make it available for bookings.`,
+          message: `Are you sure you want to publish "${room.name}"? This will make it available for bookings.`,
           confirmText: "Publish",
           confirmVariant: "primary" as const,
           icon: "publish" as const,

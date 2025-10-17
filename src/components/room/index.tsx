@@ -1,24 +1,19 @@
 import { useRoom } from "@/src/hooks/use-room";
-import { useRoomMutations } from "@/src/hooks/use-room-mutations";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { Text, View } from "react-native";
-import { logger } from "../../utils/logger";
 import SeatGrid from "../seat-grid";
 import Button from "../ui/button";
 import Chip from "../ui/chip";
-import ConfirmationDialog from "../ui/confirmation-dialog";
 import ProgressBar from "../ui/progress-bar";
-import Toast from "../ui/toast";
 
 interface RoomProps {
   room: RoomWithDetails;
-  onRoomUpdate?: (updatedRoom: RoomWithDetails) => void;
 }
 
-export default function Room({ room, onRoomUpdate }: RoomProps) {
+export default function Room({ room }: RoomProps) {
   const {
     name,
     seats,
@@ -34,118 +29,16 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
     hasAmenities,
   } = useRoom(room);
 
-  const { deleteRoom, publishRoom } = useRoomMutations();
-
-  const [showPublishConfirmation, setShowPublishConfirmation] = useState(false);
-  const [publishLoading, setPublishLoading] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  // Toast state
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error" | "info">(
-    "success"
-  );
-
-  const showToastNotification = (
-    message: string,
-    type: "success" | "error" | "info" = "success"
-  ) => {
-    setToastMessage(message);
-    setToastType(type);
-    setShowToast(true);
-  };
-
   const handleEdit = () => {
     router.push(`/(app)/rooms/edit/${room.id}` as any);
   };
 
-  const handlePublishConfirmation = () => {
-    setShowPublishConfirmation(true);
+  const handlePublish = () => {
+    router.push(`/(app)/rooms/publish/${room.id}` as any);
   };
 
-  const handleDeleteConfirmation = () => {
-    setShowDeleteConfirmation(true);
-  };
-
-  const handlePublish = async () => {
-    setPublishLoading(true);
-
-    try {
-      // Call the actual publish API
-      const updatedRoom = await publishRoom(room.id, !room.published);
-
-      if (updatedRoom) {
-        // Update local state
-        onRoomUpdate?.(updatedRoom as RoomWithDetails);
-      }
-
-      setShowPublishConfirmation(false);
-
-      // Show success toast
-      const action = room.published ? "unpublished" : "published";
-      showToastNotification(
-        `Room "${room.name}" ${action} successfully!`,
-        "success"
-      );
-
-      logger.success(
-        `Room "${room.name}" ${
-          room.published ? "unpublished" : "published"
-        } successfully`
-      );
-    } catch (error) {
-      logger.error("Failed to publish/unpublish room:", error);
-      showToastNotification(
-        `Failed to ${
-          room.published ? "unpublish" : "publish"
-        } room. Please try again.`,
-        "error"
-      );
-    } finally {
-      setPublishLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setDeleteLoading(true);
-
-    try {
-      // Call the actual delete API
-      await deleteRoom(room.id);
-
-      setShowDeleteConfirmation(false);
-
-      // Show success toast
-      showToastNotification(
-        `Room "${room.name}" deleted successfully!`,
-        "success"
-      );
-
-      // The real-time subscription will automatically remove the room from the list
-      logger.success(`Room "${room.name}" deleted successfully`);
-    } catch (error) {
-      logger.error("Failed to delete room:", error);
-      showToastNotification(
-        "Failed to delete room. Please try again.",
-        "error"
-      );
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
-  const cancelPublish = () => {
-    if (!publishLoading) {
-      setShowPublishConfirmation(false);
-    }
-  };
-
-  const cancelDelete = () => {
-    if (!deleteLoading) {
-      setShowDeleteConfirmation(false);
-    }
+  const handleDelete = () => {
+    router.push(`/(app)/rooms/delete/${room.id}` as any);
   };
 
   return (
@@ -157,7 +50,7 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
           icon="delete"
           size="sm"
           variant="danger-ghost"
-          onPress={handleDeleteConfirmation}
+          onPress={handleDelete}
           className="mr-auto"
         />
         <Button
@@ -173,7 +66,7 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
             icon="publish"
             size="sm"
             variant="success"
-            onPress={handlePublishConfirmation}
+            onPress={handlePublish}
           />
         )}
       </View>
@@ -263,44 +156,6 @@ export default function Room({ room, onRoomUpdate }: RoomProps) {
           )}
         </View>
       )}
-
-      {/* Publish Confirmation Dialog */}
-      <ConfirmationDialog
-        visible={showPublishConfirmation}
-        title={room.published ? "Unpublish Room" : "Publish Room"}
-        message={
-          room.published
-            ? `Are you sure you want to unpublish "${room.name}"? It will no longer be available for bookings.`
-            : `Are you sure you want to publish "${room.name}"? This will make it available for bookings.`
-        }
-        confirmText="Publish"
-        confirmVariant="success"
-        icon="publish"
-        onConfirm={handlePublish}
-        onCancel={cancelPublish}
-        loading={publishLoading}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
-        visible={showDeleteConfirmation}
-        title="Delete Room"
-        message={`Are you sure you want to delete "${room.name}"? This action cannot be undone.`}
-        confirmText="Delete"
-        confirmVariant="danger"
-        icon="delete"
-        onConfirm={handleDelete}
-        onCancel={cancelDelete}
-        loading={deleteLoading}
-      />
-
-      {/* Toast Notifications */}
-      <Toast
-        visible={showToast}
-        message={toastMessage}
-        type={toastType}
-        onHide={() => setShowToast(false)}
-      />
     </View>
   );
 }

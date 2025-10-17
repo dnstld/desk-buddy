@@ -19,7 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Button from "../ui/button";
+import ModalActions from "../modal-actions";
 import Toast from "../ui/toast";
 
 interface RoomFormProps {
@@ -676,30 +676,14 @@ export default function RoomForm({
       </ScrollView>
 
       {/* Submit Button */}
-      <View className="p-8 border-t border-gray-200 bg-white">
-        <View className="flex-row gap-4">
-          {onCancel && (
-            <View className="flex-1">
-              <Button
-                title="Cancel"
-                onPress={onCancel}
-                variant="secondary"
-                icon="close"
-              />
-            </View>
-          )}
-          <View className="flex-1">
-            <Button
-              title={submitButtonText}
-              onPress={handleFormSubmit}
-              loading={isSubmitting || isLoading}
-              disabled={isSubmitting || isLoading}
-              icon="content-save"
-              variant="primary"
-            />
-          </View>
-        </View>
-      </View>
+      <ModalActions
+        onCancel={onCancel}
+        onSubmit={handleFormSubmit}
+        submitText={submitButtonText}
+        submitVariant="primary"
+        submitIcon="content-save"
+        isLoading={isSubmitting || isLoading}
+      />
 
       {/* Toast Notifications */}
       <Toast

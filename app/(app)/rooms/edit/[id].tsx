@@ -1,60 +1,16 @@
 import RoomForm from "@/src/components/room-form";
+import { useFetchRoom } from "@/src/hooks/use-fetch-room";
 import { useRoomMutations } from "@/src/hooks/use-room-mutations";
-import { supabase } from "@/src/lib/supabase";
 import { RoomWithDetails } from "@/src/types/room";
 import { RoomFormData } from "@/src/validations/room-form";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 export default function EditRoom() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [room, setRoom] = useState<RoomWithDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { room, setRoom, loading, error } = useFetchRoom(id);
   const { updateRoom } = useRoomMutations();
-
-  // Fetch room data from database
-  useEffect(() => {
-    const fetchRoom = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const { data: roomData, error: roomError } = await supabase
-          .from("room")
-          .select(
-            `
-            *,
-            seats:seat(
-              *,
-              reservation(
-                *,
-                user(*)
-              )
-            )
-          `
-          )
-          .eq("id", id) // id is already a UUID string
-          .is("deleted_at", null)
-          .single();
-
-        if (roomError) throw roomError;
-        if (!roomData) throw new Error("Room not found");
-
-        setRoom(roomData);
-      } catch (err) {
-        console.error("Error fetching room:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch room");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchRoom();
-    }
-  }, [id]);
 
   const handleSubmit = async (data: RoomFormData) => {
     try {
@@ -77,7 +33,7 @@ export default function EditRoom() {
 
   const handleSuccess = () => {
     // Navigate back immediately
-    router.back();
+    router.replace("/(app)/rooms/" as any);
 
     // TODO: In a real app, you could:
     // 1. Use navigation state to pass success message

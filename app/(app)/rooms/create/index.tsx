@@ -23,8 +23,7 @@ export default function CreateRoom() {
   };
 
   const handleSuccess = () => {
-    // Navigate back with success parameters
-    router.back();
+    router.replace("/(app)/rooms/" as any);
 
     logger.success("Room created successfully! (Navigation completed)");
   };
