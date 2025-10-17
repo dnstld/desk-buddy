@@ -61,6 +61,10 @@ export const themeColors = {
   primary: colors.primary[500],
   primaryLight: colors.primary[50],
   primaryDark: colors.primary[600],
+
+  gray: colors.gray[500],
+  grayLight: colors.gray[100],
+  grayDark: colors.gray[700],
   
   textPrimary: colors.gray[900],
   textSecondary: colors.gray[500],

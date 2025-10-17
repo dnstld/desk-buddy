@@ -1,52 +1,27 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useAuth } from "../../../providers/AuthProvider";
+import { parseEmailDomain } from "../../utils/parse-email-domain";
 
 export default function AppHeader() {
   const { user } = useAuth();
 
-  return (
-    <View style={styles.header}>
-      <Text style={styles.title}>Desk Buddy</Text>
+  const getCompanyName = () => {
+    if (!user?.email) return "Company";
 
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>
-          {user?.email?.charAt(0).toUpperCase() || "U"}
-        </Text>
-      </View>
+    try {
+      const { companyName } = parseEmailDomain(user.email);
+      if (!companyName) return "Company";
+      return companyName.toUpperCase();
+    } catch {
+      return "Company";
+    }
+  };
+
+  return (
+    <View className="flex-row items-center justify-between p-4 bg-primary-500 pt-[60px]">
+      <Text className="text-xl font-bold text-white">Desk Buddy</Text>
+      <Text className="text-xl text-white">{getCompanyName()}</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "#3b82f6",
-    paddingTop: 60,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "white",
-    flex: 1,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "rgba(255, 255, 255, 0.3)",
-  },
-  avatarText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});
