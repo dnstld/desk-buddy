@@ -1,14 +1,10 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import resolveConfig from "tailwindcss/resolveConfig";
 import { AuthProvider, useAuth } from "../providers/AuthProvider";
-import tailwindConfig from "../tailwind.config.js";
 
+import { themeColors } from "@/src/constants/colors";
 import "../global.css";
-
-const fullConfig = resolveConfig(tailwindConfig);
-const theme = fullConfig.theme;
 
 function RootLayoutNav() {
   const { session, loading, authError } = useAuth();
@@ -44,7 +40,7 @@ function RootLayoutNav() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: theme?.colors?.blue?.[500] || "#3b82f6",
+          backgroundColor: themeColors.primary,
         },
         headerTintColor: "#fff",
         headerTitleStyle: {

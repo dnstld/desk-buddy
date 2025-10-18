@@ -2,13 +2,21 @@ import { themeColors } from "@/src/constants/colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs } from "expo-router";
 import React from "react";
-import AppHeader from "../../src/components/app-header";
+import { Image, ImageStyle } from "react-native";
+
+function LogoTitle(_props: any) {
+  return (
+    <Image
+      style={{ width: 24, height: 24 } as ImageStyle}
+      source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
+    />
+  );
+}
 
 export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
-        header: () => <AppHeader />,
         tabBarActiveTintColor: themeColors.primary,
         tabBarInactiveTintColor: themeColors.gray,
         tabBarStyle: {
@@ -22,6 +30,10 @@ export default function AppLayout() {
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "500",
+        },
+        headerTitle: (props) => <LogoTitle {...props} />,
+        headerStyle: {
+          backgroundColor: themeColors.primary,
         },
       }}
     >
