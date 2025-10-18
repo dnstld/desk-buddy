@@ -2,11 +2,12 @@ import Button from "@/src/components/ui/button";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import { router } from "expo-router/build/imperative-api";
-import { ComponentProps, useEffect, useState } from "react";
+import { ComponentProps, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
 import AuthPageWrapper from "../../src/components/auth-page-wrapper";
 import { TIMEOUTS } from "../../src/constants/config";
+import { useAuthTimeout } from "../../src/hooks/use-auth-timeout";
 import { handleUserSignIn } from "../../src/lib/auth-service";
 import { logger } from "../../src/utils/logger";
 
@@ -20,27 +21,29 @@ interface ErrorContent {
 
 export default function AuthCallbackScreen() {
   const params = useLocalSearchParams();
-  const { session, loading, authError, authErrorType, clearAuthError } =
-    useAuth();
+  const {
+    session,
+    loading,
+    authError,
+    authErrorType,
+    clearAuthError,
+    signOut,
+  } = useAuth();
   const [hasError, setHasError] = useState(false);
   const [isProcessingUser, setIsProcessingUser] = useState(false);
-  const [hasRedirected, setHasRedirected] = useState(false);
+  const hasNavigated = useRef(false);
 
-  // Add timeout protection for loading state
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (loading && !session && !authError) {
-        logger.warn("Auth callback timeout - redirecting to login");
-        setHasError(true);
-      }
-    }, TIMEOUTS.AUTH_LOADING);
-
-    return () => clearTimeout(timeout);
-  }, [loading, session, authError]);
+  useAuthTimeout({
+    loading,
+    session,
+    authError,
+    onTimeout: () => {
+      logger.warn("Auth callback timeout");
+      setHasError(true);
+    },
+  });
 
   useEffect(() => {
-    logger.debug("Auth callback screen params:", params);
-
     if (authError) {
       logger.info(
         "Callback screen: Found auth error from provider:",
@@ -51,7 +54,9 @@ export default function AuthCallbackScreen() {
     }
 
     if (!loading) {
-      if (session && !isProcessingUser && !hasRedirected) {
+      if (session && !isProcessingUser && !hasNavigated.current) {
+        setHasError(false);
+
         const processUser = async () => {
           setIsProcessingUser(true);
           try {
@@ -60,7 +65,7 @@ export default function AuthCallbackScreen() {
 
             if (result.success) {
               logger.success("User processed successfully");
-              setHasRedirected(true);
+              hasNavigated.current = true;
               router.replace("/(app)/rooms");
             } else {
               logger.error("Error processing user:", result.error);
@@ -88,12 +93,16 @@ export default function AuthCallbackScreen() {
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [session, loading, authError, isProcessingUser, hasRedirected, params]);
+  }, [session, loading, authError, isProcessingUser, params]);
 
-  const handleRetry = () => {
-    logger.info("User clicked retry, clearing errors and going to login");
+  const handleRetry = async () => {
+    logger.info("User clicked retry, clearing errors and signing out");
+
+    await signOut();
+
     clearAuthError();
     setHasError(false);
+
     router.replace("/(auth)/login");
   };
 
@@ -127,7 +136,25 @@ export default function AuthCallbackScreen() {
     return errorMap[errorType];
   };
 
-  if (hasError || authError) {
+  if (session && !loading) {
+    return (
+      <AuthPageWrapper>
+        <View className="w-full max-w-sm gap-8">
+          <ActivityIndicator size="large" color="#ffffff" />
+          <View className="gap-2">
+            <Text className="text-2xl font-bold text-white text-center">
+              Checking your credentials
+            </Text>
+            <Text className="text-base text-white text-center">
+              Please wait while we sign you in
+            </Text>
+          </View>
+        </View>
+      </AuthPageWrapper>
+    );
+  }
+
+  if ((hasError || authError) && !session) {
     const errorContent = getErrorContent();
     logger.warn("Showing error screen:", errorContent.title);
 
@@ -157,7 +184,7 @@ export default function AuthCallbackScreen() {
             onPress={handleRetry}
             variant="primary"
             size="md"
-            icon="send"
+            icon="login"
           />
         </View>
       </AuthPageWrapper>

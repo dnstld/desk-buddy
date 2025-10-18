@@ -84,7 +84,7 @@ export default function LoginScreen() {
           <Button
             title="Try a different email"
             onPress={handleTryAgain}
-            variant="primary"
+            variant="ghost"
             size="md"
           />
         </View>
