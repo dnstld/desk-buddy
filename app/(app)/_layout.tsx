@@ -1,8 +1,10 @@
 import { themeColors } from "@/src/constants/colors";
+import { parseEmailDomain } from "@/src/utils/parse-email-domain";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Image, ImageStyle } from "react-native";
+import { Image, ImageStyle, Text } from "react-native";
+import { useAuth } from "../../providers/AuthProvider";
 
 function LogoTitle(_props: any) {
   return (
@@ -11,6 +13,24 @@ function LogoTitle(_props: any) {
       source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
     />
   );
+}
+
+function CompanyName() {
+  const { user } = useAuth();
+
+  const getCompanyName = () => {
+    if (!user?.email) return "Company";
+
+    try {
+      const { companyName } = parseEmailDomain(user.email);
+      if (!companyName) return "Company";
+      return companyName.toUpperCase();
+    } catch {
+      return "Company";
+    }
+  };
+
+  return <Text className="text-sm text-white">{getCompanyName()}</Text>;
 }
 
 export default function AppLayout() {
@@ -31,16 +51,30 @@ export default function AppLayout() {
           fontSize: 12,
           fontWeight: "500",
         },
-        headerTitle: (props) => <LogoTitle {...props} />,
         headerStyle: {
           backgroundColor: themeColors.primary,
+          borderBottomWidth: 0,
+          shadowColor: "transparent",
+          paddingHorizontal: 4,
         },
+        headerLeft: (props) => {
+          return <LogoTitle {...props} />;
+        },
+        headerLeftContainerStyle: {
+          paddingLeft: 16,
+        },
+        headerRight: () => {
+          return <CompanyName />;
+        },
+        headerRightContainerStyle: {
+          paddingRight: 16,
+        },
+        title: "",
       }}
     >
       <Tabs.Screen
         name="rooms"
         options={{
-          title: "Rooms",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="dots-grid"
@@ -53,7 +87,6 @@ export default function AppLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="chart-bar"
@@ -66,7 +99,6 @@ export default function AppLayout() {
       <Tabs.Screen
         name="users"
         options={{
-          title: "Users",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="account-multiple"
@@ -79,7 +111,6 @@ export default function AppLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),
