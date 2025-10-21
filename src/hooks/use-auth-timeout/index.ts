@@ -1,7 +1,6 @@
+import { TIMEOUTS } from "@/src/constants/config";
 import { Session } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { TIMEOUTS } from "../constants/config";
-import { logger } from "../utils/logger";
 
 interface UseAuthTimeoutOptions {
   loading: boolean;
@@ -30,7 +29,6 @@ export function useAuthTimeout({
       const shouldTimeout = loading && !session && !authError;
 
       if (shouldTimeout) {
-        logger.warn("Auth loading timeout reached");
         setTimedOut(true);
         onTimeout();
       }

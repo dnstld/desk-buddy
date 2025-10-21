@@ -6,7 +6,6 @@ import { Controller, useForm } from "react-hook-form";
 import { Alert, Text, TextInput, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
 import { getErrorMessage } from "../../src/utils/error-handler";
-import { logger } from "../../src/utils/logger";
 
 type LoginFormData = {
   email: string;
@@ -40,7 +39,6 @@ export default function LoginScreen() {
       setEmailSent(true);
     } catch (error) {
       const errorMessage = getErrorMessage(error, "Failed to send magic link");
-      logger.error("Sign in error:", error);
       Alert.alert("Error", errorMessage);
     } finally {
       setLoading(false);
@@ -59,7 +57,7 @@ export default function LoginScreen() {
           <View className="items-center gap-2">
             <MaterialCommunityIcons
               name="email-check"
-              size={48}
+              size={42}
               color="lightgreen"
             />
 
@@ -78,11 +76,11 @@ export default function LoginScreen() {
           </View>
 
           <Text className="text-sm text-white text-center">
-            Didn’t get the email? Check your spam folder or try again.
+            Didn’t get the email? Check your spam folder or try again
           </Text>
 
           <Button
-            title="Try a different email"
+            title="Try again"
             onPress={handleTryAgain}
             variant="ghost"
             size="md"
@@ -140,7 +138,7 @@ export default function LoginScreen() {
         />
 
         <Text className="text-sm text-center text-white">
-          We’ll send you a secure link to sign in — no password needed
+          We’ll email you a magic link to sign in. No password needed!
         </Text>
       </View>
     </AuthPageWrapper>

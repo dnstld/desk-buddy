@@ -1,10 +1,8 @@
 import { Database } from "@/supabase/types";
+import { User } from "./user";
 
-// Use Supabase database types directly
-export type User = Database["public"]["Tables"]["user"]["Row"];
-
-// The table is named 'reservations' but the relationship returns as 'reservation'
-export type Reservation = Database["public"]["Tables"]["reservations"]["Row"] & {
+// The table is named 'reservation' in the database
+export type Reservation = Database["public"]["Tables"]["reservation"]["Row"] & {
   user?: User;
 };
 

@@ -11,7 +11,7 @@ export default function AuthPageWrapper({ children }: AuthPageWrapperProps) {
   return (
     <ScrollView contentContainerClassName="flex-1 flex-col justify-around items-center bg-primary-950">
       <View>
-        <Text className="text-2xl text-white font-bold">DeskBuddy</Text>
+        <Text className="text-2xl text-white font-bold">[ DeskBuddy ]</Text>
       </View>
 
       {children}

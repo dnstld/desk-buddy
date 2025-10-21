@@ -1,6 +1,5 @@
 import { supabase } from "@/src/lib/supabase";
 import { RoomWithDetails } from "@/src/types/room";
-import { logger } from "@/src/utils/logger";
 import { useEffect, useState } from "react";
 
 export function useFetchRoom(id: string | undefined) {
@@ -37,7 +36,6 @@ export function useFetchRoom(id: string | undefined) {
 
         setRoom(roomData);
       } catch (err) {
-        logger.error("Error fetching room:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch room");
       } finally {
         setLoading(false);

@@ -3,7 +3,6 @@ import { supabase } from "@/src/lib/supabase";
 import { RoomFormData } from "@/src/validations/room-form";
 import { Database } from "@/supabase/types";
 import { useState } from "react";
-import { logger } from "../utils/logger";
 
 type RoomInsert = Database["public"]["Tables"]["room"]["Insert"];
 
@@ -21,21 +20,13 @@ export function useRoomMutations() {
       setLoading(true);
       setError(null);
 
-      logger.debug("Auth user:", user);
-      logger.debug("Auth user ID:", user.id);
-
       // Get user's company_id - try both id and auth_id
       const { data: userDataArray, error: userError } = await supabase
         .from("user")
         .select("company_id, id, auth_id, email, name")
         .or(`id.eq.${user.id},auth_id.eq.${user.id}`);
 
-      logger.debug("User data from database:", userDataArray);
-      logger.debug("User lookup error:", userError);
-      logger.debug("Number of users found:", userDataArray?.length || 0);
-
       if (userError) {
-        logger.error("User lookup error:", userError);
         throw new Error(
           `Failed to find user in database: ${userError.message}`
         );
@@ -69,8 +60,6 @@ export function useRoomMutations() {
         published: false, // New rooms start as unpublished
       };
 
-      logger.debug("Inserting room with data:", roomData);
-
       // Insert the room
       const { data: newRoom, error: roomError } = await supabase
         .from("room")
@@ -78,7 +67,6 @@ export function useRoomMutations() {
         .select();
 
       if (roomError) {
-        logger.error("Room insert error:", roomError);
         throw roomError;
       }
 
@@ -98,15 +86,9 @@ export function useRoomMutations() {
           status: "available" as const,
         }));
 
-        logger.debug("Creating seats:", seats);
-
         const { error: seatsError } = await supabase.from("seat").insert(seats);
 
         if (seatsError) {
-          logger.error("Failed to create seats - Full error:", seatsError);
-          logger.error("Seat error code:", seatsError.code);
-          logger.error("Seat error message:", seatsError.message);
-          logger.error("Seat error details:", seatsError.details);
           // Optionally: Delete the room if seats creation fails
           throw new Error(`Failed to create seats: ${seatsError.message}`);
         }
@@ -117,7 +99,6 @@ export function useRoomMutations() {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create room";
       setError(errorMessage);
-      logger.error("Error creating room:", err);
       throw err;
     } finally {
       setLoading(false);
@@ -155,9 +136,9 @@ export function useRoomMutations() {
         .single();
 
       if (roomError) throw roomError;
+      if (!updatedRoom) throw new Error("No data returned from update");
 
       // Handle seat count changes
-      // Get current seats
       const { data: currentSeats, error: seatsError } = await supabase
         .from("seat")
         .select("id")
@@ -172,8 +153,7 @@ export function useRoomMutations() {
       if (newSeatCount > currentSeatCount) {
         // Add new seats
         const seatsToAdd = newSeatCount - currentSeatCount;
-        const newSeats = Array.from({ length: seatsToAdd }, (_, i) => ({
-          // Let Postgres generate the UUID automatically
+        const newSeats = Array.from({ length: seatsToAdd }, () => ({
           room_id: roomId,
           status: "available" as const,
         }));
@@ -184,14 +164,14 @@ export function useRoomMutations() {
 
         if (addSeatsError) throw addSeatsError;
       } else if (newSeatCount < currentSeatCount) {
-        // Soft delete excess seats
+        // Delete excess seats from the database
         const seatsToRemove = currentSeatCount - newSeatCount;
         const seatsToDelete =
           currentSeats?.slice(-seatsToRemove).map((s) => s.id) || [];
 
         const { error: deleteSeatsError } = await supabase
           .from("seat")
-          .update({ deleted_at: new Date().toISOString() })
+          .delete()
           .in("id", seatsToDelete);
 
         if (deleteSeatsError) throw deleteSeatsError;
@@ -202,7 +182,6 @@ export function useRoomMutations() {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to update room";
       setError(errorMessage);
-      console.error("Error updating room:", err);
       throw err;
     } finally {
       setLoading(false);
@@ -218,28 +197,27 @@ export function useRoomMutations() {
       setLoading(true);
       setError(null);
 
-      // Soft delete the room
-      const { error: roomError } = await supabase
-        .from("room")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", roomId);
-
-      if (roomError) throw roomError;
-
-      // Soft delete associated seats
+      // Hard delete associated seats first (due to foreign key constraints)
       const { error: seatsError } = await supabase
         .from("seat")
-        .update({ deleted_at: new Date().toISOString() })
+        .delete()
         .eq("room_id", roomId);
 
       if (seatsError) throw seatsError;
+
+      // Hard delete the room
+      const { error: roomError } = await supabase
+        .from("room")
+        .delete()
+        .eq("id", roomId);
+
+      if (roomError) throw roomError;
 
       return true;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete room";
       setError(errorMessage);
-      console.error("Error deleting room:", err);
       throw err;
     } finally {
       setLoading(false);

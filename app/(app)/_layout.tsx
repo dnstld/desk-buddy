@@ -1,19 +1,10 @@
+import { useAuth } from "@/providers/AuthProvider";
 import { themeColors } from "@/src/constants/colors";
 import { parseEmailDomain } from "@/src/utils/parse-email-domain";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import React from "react";
-import { Image, ImageStyle, Text } from "react-native";
-import { useAuth } from "../../providers/AuthProvider";
-
-function LogoTitle(_props: any) {
-  return (
-    <Image
-      style={{ width: 24, height: 24 } as ImageStyle}
-      source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
-    />
-  );
-}
+import { Text } from "react-native";
 
 function CompanyName() {
   const { user } = useAuth();
@@ -34,6 +25,12 @@ function CompanyName() {
 }
 
 export default function AppLayout() {
+  const { session, loading } = useAuth();
+
+  if (!loading && !session) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -55,10 +52,11 @@ export default function AppLayout() {
           backgroundColor: themeColors.primary,
           borderBottomWidth: 0,
           shadowColor: "transparent",
-          paddingHorizontal: 4,
         },
-        headerLeft: (props) => {
-          return <LogoTitle {...props} />;
+        headerLeft: () => {
+          return (
+            <Text className="text-base text-white font-bold">DeskBuddy</Text>
+          );
         },
         headerLeftContainerStyle: {
           paddingLeft: 16,
@@ -75,6 +73,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="rooms"
         options={{
+          tabBarLabel: "Rooms",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="dots-grid"
@@ -87,6 +86,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
+          tabBarLabel: "Dashboard",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="chart-bar"
@@ -99,6 +99,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="users"
         options={{
+          tabBarLabel: "Users",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="account-multiple"
@@ -111,6 +112,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="settings"
         options={{
+          tabBarLabel: "Settings",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),
