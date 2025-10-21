@@ -67,13 +67,25 @@ export default function Toast({
   const getToastStyles = () => {
     switch (type) {
       case "success":
-        return "bg-green-500 border-green-600";
+        return {
+          backgroundColor: "#10B981",
+          borderColor: "#059669",
+        };
       case "error":
-        return "bg-red-500 border-red-600";
+        return {
+          backgroundColor: "#EF4444",
+          borderColor: "#DC2626",
+        };
       case "info":
-        return "bg-blue-500 border-blue-600";
+        return {
+          backgroundColor: "#3B82F6",
+          borderColor: "#2563EB",
+        };
       default:
-        return "bg-green-500 border-green-600";
+        return {
+          backgroundColor: "#10B981",
+          borderColor: "#059669",
+        };
     }
   };
 
@@ -92,17 +104,27 @@ export default function Toast({
 
   if (!visible) return null;
 
+  const toastStyles = getToastStyles();
+
   return (
-    <View className="absolute top-0 left-0 right-0 z-50 px-4 pt-12">
+    <View className="absolute top-0 left-0 right-0 z-50 px-4 pt-32">
       <Animated.View
         style={{
           opacity: fadeAnim,
           transform: [{ translateY }],
+          backgroundColor: toastStyles.backgroundColor,
+          borderColor: toastStyles.borderColor,
+          borderWidth: 1,
+          borderRadius: 8,
+          padding: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          elevation: 5,
         }}
-        className={`
-          flex-row items-center p-4 rounded-lg border shadow-lg
-          ${getToastStyles()}
-        `.trim()}
       >
         <MaterialCommunityIcons
           name={getIcon()}
