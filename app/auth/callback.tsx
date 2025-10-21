@@ -1,15 +1,12 @@
 import Button from "@/src/components/ui/button";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useLocalSearchParams } from "expo-router/build/hooks";
 import { router } from "expo-router/build/imperative-api";
 import { ComponentProps, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
 import AuthPageWrapper from "../../src/components/auth-page-wrapper";
-import { TIMEOUTS } from "../../src/constants/config";
 import { useAuthTimeout } from "../../src/hooks/use-auth-timeout";
 import { handleUserSignIn } from "../../src/lib/auth-service";
-import { logger } from "../../src/utils/logger";
 
 type ErrorType = "used" | "expired" | "invalid" | "generic";
 
@@ -20,7 +17,6 @@ interface ErrorContent {
 }
 
 export default function AuthCallbackScreen() {
-  const params = useLocalSearchParams();
   const {
     session,
     loading,
@@ -30,74 +26,66 @@ export default function AuthCallbackScreen() {
     signOut,
   } = useAuth();
   const [hasError, setHasError] = useState(false);
-  const [isProcessingUser, setIsProcessingUser] = useState(false);
-  const hasNavigated = useRef(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const hasProcessed = useRef(false);
 
   useAuthTimeout({
     loading,
     session,
     authError,
     onTimeout: () => {
-      logger.warn("Auth callback timeout");
       setHasError(true);
+      setErrorMessage("Authentication timeout. Please try again.");
     },
   });
 
   useEffect(() => {
-    if (authError) {
-      logger.info(
-        "Callback screen: Found auth error from provider:",
-        authError
-      );
-      setHasError(true);
+    if (hasProcessed.current) {
       return;
     }
 
-    if (!loading) {
-      if (session && !isProcessingUser && !hasNavigated.current) {
-        setHasError(false);
-
-        const processUser = async () => {
-          setIsProcessingUser(true);
-          try {
-            logger.success("Auth successful, processing user...");
-            const result = await handleUserSignIn();
-
-            if (result.success) {
-              logger.success("User processed successfully");
-              hasNavigated.current = true;
-              router.replace("/(app)/rooms");
-            } else {
-              logger.error("Error processing user:", result.error);
-              setHasError(true);
-            }
-          } catch (error) {
-            logger.error("Error in user processing:", error);
-            setHasError(true);
-          } finally {
-            setIsProcessingUser(false);
-          }
-        };
-
-        processUser();
-      } else if (!session) {
-        const timeoutId = setTimeout(() => {
-          if (!authError && !session) {
-            logger.error(
-              "No auth success after timeout, showing generic error"
-            );
-            setHasError(true);
-          }
-        }, TIMEOUTS.AUTH_ERROR_DELAY);
-
-        return () => clearTimeout(timeoutId);
-      }
+    if (loading) {
+      return;
     }
-  }, [session, loading, authError, isProcessingUser, params]);
+
+    if (authError && !session) {
+      setHasError(true);
+      setErrorMessage(authError);
+      return;
+    }
+
+    if (session) {
+      hasProcessed.current = true;
+
+      if (authError) {
+        clearAuthError();
+      }
+
+      const processUser = async () => {
+        try {
+          const result = await handleUserSignIn();
+
+          if (result.success) {
+            router.replace("/(app)/rooms");
+          } else {
+            setHasError(true);
+            setErrorMessage(result.error || "Failed to complete sign in");
+          }
+        } catch (error) {
+          setHasError(true);
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "An unexpected error occurred"
+          );
+        }
+      };
+
+      processUser();
+    }
+  }, [session, loading, authError, clearAuthError]);
 
   const handleRetry = async () => {
-    logger.info("User clicked retry, clearing errors and signing out");
-
     await signOut();
 
     clearAuthError();
@@ -113,23 +101,26 @@ export default function AuthCallbackScreen() {
       used: {
         icon: "email-open",
         title: "Magic Link Already Used",
-        message: "This magic link has already been used and is no longer valid",
+        message:
+          errorMessage ||
+          "Your magic link has already been used and is no longer valid",
       },
       expired: {
-        icon: "email-off",
+        icon: "email-sync-outline",
         title: "Magic Link Expired",
         message:
-          authError || "Your magic link has expired or is no longer valid",
+          errorMessage || "Your magic link has expired or is no longer valid",
       },
       invalid: {
         icon: "email-remove",
         title: "Invalid Magic Link",
-        message: "This magic link is not valid or has been corrupted",
+        message:
+          errorMessage || "Your magic link is not valid or has been corrupted",
       },
       generic: {
         icon: "email-alert",
-        title: "Magic Link Issue",
-        message: authError || "There was an issue with your magic link.",
+        title: "Authentication Issue",
+        message: errorMessage || "There was an issue with your authentication",
       },
     };
 
@@ -156,7 +147,6 @@ export default function AuthCallbackScreen() {
 
   if ((hasError || authError) && !session) {
     const errorContent = getErrorContent();
-    logger.warn("Showing error screen:", errorContent.title);
 
     return (
       <AuthPageWrapper>
@@ -164,8 +154,8 @@ export default function AuthCallbackScreen() {
           <View className="items-center gap-2">
             <MaterialCommunityIcons
               name={errorContent.icon}
-              size={48}
-              color={hasError || authError ? "red" : "lightgreen"}
+              size={42}
+              color="white"
             />
 
             <Text className="text-2xl font-bold text-white">

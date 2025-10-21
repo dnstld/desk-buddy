@@ -1,41 +1,13 @@
-import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect } from "react";
+import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AuthProvider, useAuth } from "../providers/AuthProvider";
 
+import { AuthProvider } from "@/providers/AuthProvider";
+import { ToastProvider } from "@/providers/ToastProvider";
 import { themeColors } from "@/src/constants/colors";
-import "../global.css";
+
+import "@/global.css";
 
 function RootLayoutNav() {
-  const { session, loading, authError } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (loading) return;
-
-    const inAuthGroup = segments[0] === "(auth)";
-    const inAppGroup = segments[0] === "(app)";
-    const isCallbackScreen =
-      segments[0] === "auth" && segments[1] === "callback";
-
-    if (isCallbackScreen) {
-      return;
-    }
-
-    if (authError) {
-      return;
-    }
-
-    if (session && inAuthGroup) {
-      router.replace("/(app)/rooms");
-    }
-
-    if (!session && !inAuthGroup && !inAppGroup) {
-      router.replace("/(auth)/login");
-    }
-  }, [session, loading, authError, router, segments]);
-
   return (
     <Stack
       screenOptions={{
@@ -60,9 +32,11 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </ToastProvider>
     </SafeAreaProvider>
   );
 }
