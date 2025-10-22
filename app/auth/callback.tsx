@@ -5,7 +5,7 @@ import { router } from "expo-router/build/imperative-api";
 import { ComponentProps, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
-import AuthPageWrapper from "../../src/components/auth-page-wrapper";
+import CallbackPageWrapper from "../../src/components/callback-page-wrapper";
 import { useAuthTimeout } from "../../src/hooks/use-auth-timeout";
 import { handleUserSignIn } from "../../src/lib/auth-service";
 
@@ -101,27 +101,23 @@ export default function AuthCallbackScreen() {
     const errorMap: Record<ErrorType, ErrorContent> = {
       used: {
         icon: "email-open",
-        title: "Magic Link Already Used",
-        message:
-          errorMessage ||
-          "Your magic link has already been used and is no longer valid",
+        title: "Magic link already used",
+        message: "Your magic link has already been used and is no longer valid",
       },
       expired: {
         icon: "email-sync-outline",
-        title: "Magic Link Expired",
-        message:
-          errorMessage || "Your magic link has expired or is no longer valid",
+        title: "Magic link expired",
+        message: "Your magic link has expired or is no longer valid",
       },
       invalid: {
-        icon: "email-remove",
-        title: "Invalid Magic Link",
-        message:
-          errorMessage || "Your magic link is not valid or has been corrupted",
+        icon: "email-sync-outline",
+        title: "Invalid magic link",
+        message: "Your magic link is not valid or has been corrupted",
       },
       generic: {
-        icon: "email-alert",
-        title: "Authentication Issue",
-        message: errorMessage || "There was an issue with your authentication",
+        icon: "email-sync-outline",
+        title: "Oops! Something went wrong",
+        message: "There was an issue signing you in. Please try again",
       },
     };
 
@@ -130,9 +126,9 @@ export default function AuthCallbackScreen() {
 
   if (session && !loading) {
     return (
-      <AuthPageWrapper>
+      <CallbackPageWrapper>
         <View className="w-full max-w-sm gap-8">
-          <ActivityIndicator size="large" color={colors.background[500]} />
+          <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
           <View className="gap-2">
             <Text className="text-2xl font-bold text-white text-center">
               Checking your credentials
@@ -142,7 +138,7 @@ export default function AuthCallbackScreen() {
             </Text>
           </View>
         </View>
-      </AuthPageWrapper>
+      </CallbackPageWrapper>
     );
   }
 
@@ -150,13 +146,13 @@ export default function AuthCallbackScreen() {
     const errorContent = getErrorContent();
 
     return (
-      <AuthPageWrapper>
+      <CallbackPageWrapper>
         <View className="w-full max-w-sm gap-8">
           <View className="items-center gap-2">
             <MaterialCommunityIcons
               name={errorContent.icon}
               size={42}
-              color={colors.background[500]}
+              color={colors.error.DEFAULT}
             />
 
             <Text className="text-2xl font-bold text-white">
@@ -178,14 +174,14 @@ export default function AuthCallbackScreen() {
             icon="login"
           />
         </View>
-      </AuthPageWrapper>
+      </CallbackPageWrapper>
     );
   }
 
   return (
-    <AuthPageWrapper>
+    <CallbackPageWrapper>
       <View className="w-full max-w-sm gap-8">
-        <ActivityIndicator size="large" color={colors.background[500]} />
+        <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
         <View className="gap-2">
           <Text className="text-2xl font-bold text-white text-center">
             Checking your credentials
@@ -195,6 +191,6 @@ export default function AuthCallbackScreen() {
           </Text>
         </View>
       </View>
-    </AuthPageWrapper>
+    </CallbackPageWrapper>
   );
 }
