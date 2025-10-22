@@ -1,4 +1,4 @@
-import { useRoom } from "@/src/hooks/use-room";
+import { useRole, useRoom } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
@@ -29,6 +29,8 @@ export default function Room({ room }: RoomProps) {
     hasAmenities,
   } = useRoom(room);
 
+  const { isMember } = useRole();
+
   const handleEdit = () => {
     router.push(`/(app)/rooms/edit/${room.id}` as any);
   };
@@ -44,39 +46,41 @@ export default function Room({ room }: RoomProps) {
   return (
     <View className="bg-white rounded-lg shadow-sm p-4 gap-3">
       {/* Admin actions */}
-      <View className="flex-row justify-end items-center gap-4 mb-2">
-        <Button
-          title="Delete"
-          icon="delete"
-          size="sm"
-          variant="danger-ghost"
-          onPress={handleDelete}
-          className="mr-auto"
-        />
-        <Button
-          title="Edit"
-          icon="pencil"
-          size="sm"
-          variant="primary-outline"
-          onPress={handleEdit}
-        />
-        {!room.published && (
+      {!isMember && (
+        <View className="flex-row justify-end items-center gap-4 mb-2">
           <Button
-            title="Publish"
-            icon="publish"
+            title="Delete"
+            icon="delete"
             size="sm"
-            variant="success"
-            onPress={handlePublish}
+            variant="danger-ghost"
+            onPress={handleDelete}
+            className="mr-auto"
           />
-        )}
-      </View>
+          <Button
+            title="Edit"
+            icon="pencil"
+            size="sm"
+            variant="primary-outline"
+            onPress={handleEdit}
+          />
+          {!room.published && (
+            <Button
+              title="Publish"
+              icon="publish"
+              size="sm"
+              variant="success"
+              onPress={handlePublish}
+            />
+          )}
+        </View>
+      )}
 
       <View className="flex-row gap-8">
         {/* 3 of 10 seats available */}
         <View className="flex-1">
           <View className="flex-row gap-1 items-center">
             <MaterialCommunityIcons name="seat" />
-            <Text className="text-sm text-gray-600">{occupancyText}</Text>
+            <Text className="text-sm text-gray">{occupancyText}</Text>
           </View>
 
           <ProgressBar progress={percentOccupied} className="mb-2" />
@@ -91,7 +95,7 @@ export default function Room({ room }: RoomProps) {
               <Chip label={roomStatus.label} variant={roomStatus.variant} />
             </View>
 
-            <Text className="text-xs text-gray-500">Floor {floor}</Text>
+            <Text className="text-xs text-gray">Floor {floor}</Text>
           </View>
         </View>
       </View>
@@ -100,7 +104,7 @@ export default function Room({ room }: RoomProps) {
       <Text className="text-2xl font-bold leading-tight flex-1">{name}</Text>
 
       {description && (
-        <Text className="text-sm text-gray-600" numberOfLines={2}>
+        <Text className="text-sm text-gray" numberOfLines={2}>
           {description}
         </Text>
       )}

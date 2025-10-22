@@ -1,31 +1,25 @@
+import { useToast } from "@/providers/ToastProvider";
 import RoomForm from "@/src/components/room-form";
-import { useRoomMutations } from "@/src/hooks/use-room-mutations";
-import { logger } from "@/src/utils/logger";
+import { useRoomMutations } from "@/src/hooks";
 import { RoomFormData } from "@/src/validations/room-form";
 import { router } from "expo-router";
 import { View } from "react-native";
 
 export default function CreateRoom() {
   const { createRoom } = useRoomMutations();
+  const { showError, showSuccess } = useToast();
 
   const handleSubmit = async (data: RoomFormData) => {
-    try {
-      logger.info("Creating room with data:", data);
-
-      // Create the room using Supabase
-      await createRoom(data);
-
-      logger.success("Room created successfully!");
-    } catch (error) {
-      logger.error("Failed to create room:", error);
-      throw error; // Re-throw to let RoomForm handle the error display
-    }
+    await createRoom(data);
   };
 
   const handleSuccess = () => {
-    router.replace("/(app)/rooms/" as any);
+    showSuccess("Room created successfully!");
+    router.replace("/(app)/rooms");
+  };
 
-    logger.success("Room created successfully! (Navigation completed)");
+  const handleError = (error: Error) => {
+    showError(error.message || "Failed to create room");
   };
 
   const handleCancel = () => {
@@ -33,10 +27,11 @@ export default function CreateRoom() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-background-100">
       <RoomForm
         onSubmit={handleSubmit}
         onSuccess={handleSuccess}
+        onError={handleError}
         onCancel={handleCancel}
       />
     </View>

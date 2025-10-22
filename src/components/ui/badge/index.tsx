@@ -23,7 +23,7 @@ const variantStyles = {
     border: "border-white",
   },
   primary: {
-    background: "bg-primary-500",
+    background: "bg-primary",
     border: "border-white",
   },
 };

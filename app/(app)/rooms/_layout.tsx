@@ -1,4 +1,4 @@
-import { themeColors } from "@/src/constants/colors";
+import { colors } from "@/src/theme/colors";
 import { Stack } from "expo-router";
 
 export default function RoomsLayout() {
@@ -6,9 +6,9 @@ export default function RoomsLayout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: themeColors.primary,
+          backgroundColor: colors.background.DEFAULT,
         },
-        headerTintColor: "#fff",
+        headerTintColor: colors.gray[50],
         headerTitleStyle: {
           fontWeight: "bold",
         },

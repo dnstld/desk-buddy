@@ -19,7 +19,7 @@ export default function AppHeader() {
   };
 
   return (
-    <View className="flex-row items-center justify-between p-4 bg-primary-500 pt-[60px]">
+    <View className="flex-row items-center justify-between p-4 bg-primary pt-[60px]">
       <Text className="text-xl font-bold text-white">Desk Buddy</Text>
       <Text className="text-xl text-white">{getCompanyName()}</Text>
     </View>

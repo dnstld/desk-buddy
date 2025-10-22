@@ -1,19 +1,50 @@
+import { useAuth } from "@/providers/AuthProvider";
+import AppPageWrapper from "@/src/components/app-page-wrapper";
+import { useRole } from "@/src/hooks";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import {
+  ActivityIndicator,
   Alert,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useAuth } from "../../../providers/AuthProvider";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
+  const { role, loading: roleLoading } = useRole();
   const router = useRouter();
+
+  const translateY = useSharedValue(20);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (!roleLoading) {
+      translateY.value = withSpring(0);
+      opacity.value = withTiming(1, {
+        duration: 300,
+      });
+    } else {
+      translateY.value = 20;
+      opacity.value = 0;
+    }
+  }, [roleLoading, translateY, opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: translateY.value }],
+      opacity: opacity.value,
+    };
+  });
 
   const handleSignOut = async () => {
     try {
@@ -25,7 +56,7 @@ export default function Settings() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <AppPageWrapper>
       {user && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
@@ -33,13 +64,19 @@ export default function Settings() {
             <View style={styles.userInfo}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
-                  {user.email?.charAt(0).toUpperCase() || "U"}
+                  {roleLoading ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    user?.email?.charAt(0).toUpperCase() || "U"
+                  )}
                 </Text>
               </View>
-              <View style={styles.userDetails}>
-                <Text style={styles.userEmail}>{user.email}</Text>
-                <Text style={styles.userRole}>User</Text>
-              </View>
+              {!roleLoading && (
+                <Animated.View style={[styles.userDetails, animatedStyle]}>
+                  <Text style={styles.userEmail}>{user.email}</Text>
+                  <Text style={styles.userRole}>{role}</Text>
+                </Animated.View>
+              )}
             </View>
           </View>
         </View>
@@ -59,7 +96,7 @@ export default function Settings() {
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+    </AppPageWrapper>
   );
 }
 

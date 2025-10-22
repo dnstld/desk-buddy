@@ -13,7 +13,7 @@ export default function ProgressBar({
   progress,
   height = 4,
   backgroundColor = "bg-gray-200",
-  progressColor = "bg-primary-500",
+  progressColor = "bg-primary",
   rounded = true,
   className,
   style,

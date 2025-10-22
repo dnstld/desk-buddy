@@ -1,4 +1,4 @@
-import { useSeatGrid } from "@/src/hooks/use-seat-grid";
+import { useSeatGrid } from "@/src/hooks";
 import { Seat } from "@/src/types/room";
 import React from "react";
 import { Text, View } from "react-native";
@@ -27,7 +27,7 @@ export default function SeatGrid({ seats, meeting = false }: SeatGridProps) {
     return (
       <View className="items-center py-4 w-full">
         <View className="w-full h-8 bg-gray-100 rounded items-center justify-center">
-          <Text className="text-gray-500 text-sm">
+          <Text className="text-gray text-sm">
             Oops! Seats failed to load. Try again later or reload the app.
           </Text>
         </View>

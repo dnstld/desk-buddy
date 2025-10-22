@@ -1,36 +1,14 @@
+import AppPageWrapper from "@/src/components/app-page-wrapper";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 export default function Dashboard() {
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Dashboard</Text>
-        <Text style={styles.subtitle}>Coming soon...</Text>
+    <AppPageWrapper className="items-center justify-center">
+      <View className="items-center">
+        <Text className="text-white text-lg">Dashboard</Text>
+        <Text className="text-gray-400">Coming soon</Text>
       </View>
-    </View>
+    </AppPageWrapper>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafb",
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#111827",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-  },
-});

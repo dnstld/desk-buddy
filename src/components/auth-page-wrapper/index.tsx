@@ -9,9 +9,9 @@ export default function AuthPageWrapper({ children }: AuthPageWrapperProps) {
   const year = new Date().getFullYear();
 
   return (
-    <ScrollView contentContainerClassName="flex-1 flex-col justify-around items-center bg-primary-950">
+    <ScrollView contentContainerClassName="flex-1 flex-col justify-around items-center bg-background">
       <View>
-        <Text className="text-2xl text-white font-bold">[ DeskBuddy ]</Text>
+        <Text className="text-2xl text-primary font-bold">[ DeskBuddy ]</Text>
       </View>
 
       {children}

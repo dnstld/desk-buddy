@@ -1,7 +1,5 @@
 import RoomPublish from "@/src/components/room-publish";
-import { useFetchRoom } from "@/src/hooks/use-fetch-room";
-import { useRoomMutations } from "@/src/hooks/use-room-mutations";
-import { logger } from "@/src/utils/logger";
+import { useFetchRoom, useRoomMutations } from "@/src/hooks";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -22,9 +20,7 @@ export default function PublishRoom() {
       await publishRoom(room.id, newPublishedState);
 
       const action = newPublishedState ? "published" : "unpublished";
-      logger.success(`Room "${room.name}" ${action} successfully`);
     } catch (error) {
-      logger.error("Failed to publish/unpublish room:", error);
       throw error;
     } finally {
       setPublishing(false);
@@ -34,7 +30,6 @@ export default function PublishRoom() {
   const handleSuccess = () => {
     router.replace("/(app)/rooms/" as any);
     const action = room?.published ? "unpublished" : "published";
-    logger.success(`Room ${action} successfully! (Navigation completed)`);
   };
 
   const handleCancel = () => {
@@ -52,10 +47,10 @@ export default function PublishRoom() {
   if (error || !room) {
     return (
       <View className="flex-1 items-center justify-center bg-white p-4">
-        <Text className="text-red-500 text-center mb-4">
+        <Text className="text-error text-center mb-4">
           {error || "Room not found"}
         </Text>
-        <Text className="text-blue-500" onPress={() => router.back()}>
+        <Text className="text-primary" onPress={() => router.back()}>
           Go Back
         </Text>
       </View>

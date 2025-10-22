@@ -22,7 +22,7 @@ export default function Seat({ isOccupied, user, seatIndex }: SeatProps) {
               resizeMode="cover"
             />
           ) : (
-            <View className="w-full h-full bg-primary-500 items-center justify-center">
+            <View className="w-full h-full bg-primary items-center justify-center">
               <Text className="text-white text-lg font-bold">
                 {user.name
                   .split(" ")

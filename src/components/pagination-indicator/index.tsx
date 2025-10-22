@@ -21,7 +21,7 @@ export default function PaginationIndicator({
           <View
             key={`indicator-${index}`}
             className={`w-2 h-2 rounded-full mx-1 ${
-              index === currentPage ? "bg-primary-500" : "bg-gray-300"
+              index === currentPage ? "bg-primary" : "bg-gray-300"
             }`}
           />
         ))}

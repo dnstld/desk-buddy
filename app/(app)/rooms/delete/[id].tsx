@@ -1,7 +1,5 @@
 import RoomDelete from "@/src/components/room-delete";
-import { useFetchRoom } from "@/src/hooks/use-fetch-room";
-import { useRoomMutations } from "@/src/hooks/use-room-mutations";
-import { logger } from "@/src/utils/logger";
+import { useFetchRoom, useRoomMutations } from "@/src/hooks";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -19,9 +17,7 @@ export default function DeleteRoom() {
 
     try {
       await deleteRoom(room.id);
-      logger.success(`Room "${room.name}" deleted successfully`);
     } catch (error) {
-      logger.error("Failed to delete room:", error);
       throw error;
     } finally {
       setDeleting(false);
@@ -30,7 +26,6 @@ export default function DeleteRoom() {
 
   const handleSuccess = () => {
     router.replace("/(app)/rooms/" as any);
-    logger.success("Room deleted successfully! (Navigation completed)");
   };
 
   const handleCancel = () => {
@@ -48,10 +43,10 @@ export default function DeleteRoom() {
   if (error || !room) {
     return (
       <View className="flex-1 items-center justify-center bg-white p-4">
-        <Text className="text-red-500 text-center mb-4">
+        <Text className="text-error text-center mb-4">
           {error || "Room not found"}
         </Text>
-        <Text className="text-blue-500" onPress={() => router.back()}>
+        <Text className="text-primary" onPress={() => router.back()}>
           Go Back
         </Text>
       </View>

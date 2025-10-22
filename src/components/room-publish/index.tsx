@@ -1,9 +1,10 @@
+import { useToast } from "@/providers/ToastProvider";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import ModalActions from "../modal-actions";
-import Toast from "../ui/toast";
+import InfoMessage from "../ui/info-message";
 
 interface RoomPublishProps {
   room: RoomWithDetails;
@@ -20,20 +21,7 @@ export default function RoomPublish({
   onCancel,
   isLoading = false,
 }: RoomPublishProps) {
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error" | "info">(
-    "success"
-  );
-
-  const showToastNotification = (
-    message: string,
-    type: "success" | "error" | "info" = "success"
-  ) => {
-    setToastMessage(message);
-    setToastType(type);
-    setShowToast(true);
-  };
+  const { showSuccess, showError } = useToast();
 
   const handlePublish = async () => {
     try {
@@ -41,23 +29,17 @@ export default function RoomPublish({
 
       const action = room.published ? "unpublished" : "published";
 
-      // Show success toast first
-      showToastNotification(
-        `Room "${room.name}" ${action} successfully!`,
-        "success"
-      );
+      // Show success toast
+      showSuccess(`Room "${room.name}" ${action} successfully!`);
 
-      // Call success callback after a delay to allow toast to show
-      setTimeout(() => {
-        onSuccess?.();
-      }, 1500);
+      onSuccess?.();
     } catch (error) {
       // Show error toast
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Failed to publish/unpublish room";
-      showToastNotification(errorMessage, "error");
+      showError(errorMessage);
     }
   };
 
@@ -102,24 +84,24 @@ export default function RoomPublish({
 
           <View className="flex-row gap-4 mb-2">
             <View className="flex-1">
-              <Text className="text-sm text-gray-500">Type</Text>
+              <Text className="text-sm text-gray">Type</Text>
               <Text className="text-gray-900">
                 {room.type === "meeting" ? "Meeting Room" : "Workspace"}
               </Text>
             </View>
             <View className="flex-1">
-              <Text className="text-sm text-gray-500">Floor</Text>
+              <Text className="text-sm text-gray">Floor</Text>
               <Text className="text-gray-900">{room.floor}</Text>
             </View>
           </View>
 
           <View className="flex-row gap-4">
             <View className="flex-1">
-              <Text className="text-sm text-gray-500">Capacity</Text>
+              <Text className="text-sm text-gray">Capacity</Text>
               <Text className="text-gray-900">{room.capacity} seats</Text>
             </View>
             <View className="flex-1">
-              <Text className="text-sm text-gray-500">Current Status</Text>
+              <Text className="text-sm text-gray">Current Status</Text>
               <Text className="text-gray-900">
                 {room.published ? "Published" : "Draft"}
               </Text>
@@ -128,39 +110,19 @@ export default function RoomPublish({
         </View>
 
         {/* Info Message */}
-        <View
-          className={`border rounded-lg p-4 mb-6 ${
+        <InfoMessage
+          variant={isPublishing ? "info" : "warning"}
+          title={
             isPublishing
-              ? "bg-green-50 border-green-200"
-              : "bg-orange-50 border-orange-200"
-          }`}
-        >
-          <View className="flex-row items-start gap-3">
-            <MaterialCommunityIcons
-              name="information"
-              size={24}
-              color={isPublishing ? "#10B981" : "#F59E0B"}
-            />
-            <View className="flex-1">
-              <Text
-                className={`font-semibold mb-1 ${
-                  isPublishing ? "text-green-900" : "text-orange-900"
-                }`}
-              >
-                {isPublishing
-                  ? "Room will be visible to all users"
-                  : "Room will be hidden from users"}
-              </Text>
-              <Text
-                className={isPublishing ? "text-green-700" : "text-orange-700"}
-              >
-                {isPublishing
-                  ? "Users will be able to view and book seats in this room."
-                  : "Users will no longer be able to view or book this room, but existing reservations will remain."}
-              </Text>
-            </View>
-          </View>
-        </View>
+              ? "Room will be visible to all users"
+              : "Room will be hidden from users"
+          }
+          message={
+            isPublishing
+              ? "Users will be able to view and book seats in this room."
+              : "Users will no longer be able to view or book this room, but existing reservations will remain."
+          }
+        />
       </ScrollView>
 
       {/* Action Buttons */}
@@ -171,14 +133,6 @@ export default function RoomPublish({
         submitVariant={isPublishing ? "success" : "primary"}
         submitIcon="publish"
         isLoading={isLoading}
-      />
-
-      {/* Toast Notifications */}
-      <Toast
-        visible={showToast}
-        message={toastMessage}
-        type={toastType}
-        onHide={() => setShowToast(false)}
       />
     </View>
   );

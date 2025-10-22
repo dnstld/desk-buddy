@@ -1,5 +1,6 @@
 import AuthPageWrapper from "@/src/components/auth-page-wrapper";
 import Button from "@/src/components/ui/button";
+import { colors } from "@/src/theme/colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -58,7 +59,7 @@ export default function LoginScreen() {
             <MaterialCommunityIcons
               name="email-check"
               size={42}
-              color="lightgreen"
+              color={colors.background[500]}
             />
 
             <Text className="text-2xl font-bold text-white">
@@ -123,7 +124,7 @@ export default function LoginScreen() {
             )}
           />
           {errors.email && (
-            <Text className="text-red-500 text-sm">{errors.email.message}</Text>
+            <Text className="text-error text-sm">{errors.email.message}</Text>
           )}
         </View>
 

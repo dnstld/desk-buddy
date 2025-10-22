@@ -4,84 +4,66 @@ import { Text, View } from "react-native";
 
 export default function RoomsEmpty() {
   return (
-    <View className="bg-white rounded-lg shadow-sm p-6 gap-4">
+    <View className="bg-white rounded-lg shadow-sm p-8">
       {/* Header Section */}
-      <View className="items-center gap-4">
-        <View className="bg-primary-50 w-20 h-20 rounded-full items-center justify-center">
-          <MaterialCommunityIcons
-            name="office-building-plus-outline"
-            size={40}
-            color="#3B82F6"
-          />
-        </View>
-
-        <View className="items-center gap-2">
-          <Text className="text-2xl font-bold text-gray-900">No Rooms Yet</Text>
-          <Text className="text-base text-gray-600 text-center">
-            Create your first room to start managing desk reservations
-          </Text>
-        </View>
+      <View className="items-center gap-2 mb-10">
+        <Text className="text-2xl font-bold text-gray-900">
+          Let&apos;s get started
+        </Text>
+        <Text className="text-sm text-gray">
+          Create your first room in two quick steps
+        </Text>
       </View>
 
-      {/* Information Section */}
-      <View className="gap-3 mt-2">
-        <View className="flex-row items-start gap-3">
-          <View className="bg-primary-100 w-8 h-8 rounded-full items-center justify-center mt-1">
-            <MaterialCommunityIcons name="seat" size={16} color="#3B82F6" />
+      {/* Steps */}
+      <View className="gap-8">
+        {/* Step 1 */}
+        <View className="flex-row items-start gap-5">
+          <View className="items-center pt-1">
+            <View className="bg-blue-100 w-12 h-12 rounded-xl items-center justify-center">
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={22}
+                color="#3B82F6"
+              />
+            </View>
           </View>
           <View className="flex-1">
-            <Text className="text-sm font-semibold text-gray-900 mb-1">
-              Workspace & Meeting Rooms
+            <View className="flex-row items-baseline gap-2 mb-2">
+              <Text className="text-xs font-bold text-primary">STEP 1</Text>
+            </View>
+            <Text className="text-lg font-semibold text-gray-900 mb-1">
+              Create a room
             </Text>
-            <Text className="text-xs text-gray-600 leading-relaxed">
-              Create both workspace areas for daily desk booking and meeting
-              rooms for team collaboration
+            <Text className="text-sm text-gray leading-relaxed">
+              Add a workspace for desk booking or a meeting room for team
+              sessions
             </Text>
           </View>
         </View>
 
-        <View className="flex-row items-start gap-3">
-          <View className="bg-green-100 w-8 h-8 rounded-full items-center justify-center mt-1">
-            <MaterialCommunityIcons
-              name="calendar-check"
-              size={16}
-              color="#10B981"
-            />
+        {/* Step 2 */}
+        <View className="flex-row items-start gap-5">
+          <View className="items-center pt-1">
+            <View className="bg-green-100 w-12 h-12 rounded-xl items-center justify-center">
+              <MaterialCommunityIcons
+                name="check-circle-outline"
+                size={22}
+                color="#10B981"
+              />
+            </View>
           </View>
           <View className="flex-1">
-            <Text className="text-sm font-semibold text-gray-900 mb-1">
-              Real-time Availability
+            <View className="flex-row items-baseline gap-2 mb-2">
+              <Text className="text-xs font-bold text-success">STEP 2</Text>
+            </View>
+            <Text className="text-lg font-semibold text-gray-900 mb-1">
+              Publish it
             </Text>
-            <Text className="text-xs text-gray-600 leading-relaxed">
-              Track seat occupancy and availability in real-time with visual
-              indicators
-            </Text>
-          </View>
-        </View>
-
-        <View className="flex-row items-start gap-3">
-          <View className="bg-purple-100 w-8 h-8 rounded-full items-center justify-center mt-1">
-            <MaterialCommunityIcons name="cog" size={16} color="#8B5CF6" />
-          </View>
-          <View className="flex-1">
-            <Text className="text-sm font-semibold text-gray-900 mb-1">
-              Easy Management
-            </Text>
-            <Text className="text-xs text-gray-600 leading-relaxed">
-              Configure amenities, set capacity limits, and manage room settings
-              with ease
+            <Text className="text-sm text-gray leading-relaxed">
+              Make it live so your team can start booking right away
             </Text>
           </View>
-        </View>
-      </View>
-
-      {/* Call to Action */}
-      <View className="mt-4 pt-4 border-t border-gray-100">
-        <View className="flex-row items-center justify-center gap-2">
-          <MaterialCommunityIcons name="plus-circle" size={16} />
-          <Text className="text-sm font-medium text-gray-700">
-            Tap the button below to create your first room
-          </Text>
         </View>
       </View>
     </View>

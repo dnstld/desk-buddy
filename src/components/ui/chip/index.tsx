@@ -23,7 +23,7 @@ interface ChipProps extends TouchableOpacityProps {
 const variantStyles = {
   primary: {
     background: "bg-primary-100",
-    text: "text-primary-500",
+    text: "text-primary",
     border: "",
   },
   warning: {

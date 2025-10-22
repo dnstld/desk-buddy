@@ -1,5 +1,5 @@
 import { useAuth } from "@/providers/AuthProvider";
-import { themeColors } from "@/src/constants/colors";
+import { colors } from "@/src/theme/colors";
 import { parseEmailDomain } from "@/src/utils/parse-email-domain";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Redirect, Tabs } from "expo-router";
@@ -34,14 +34,13 @@ export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: themeColors.primary,
-        tabBarInactiveTintColor: themeColors.gray,
+        tabBarActiveTintColor: colors.primary.DEFAULT,
+        tabBarInactiveTintColor: colors.gray[100],
         tabBarStyle: {
-          backgroundColor: "white",
-          borderTopWidth: 1,
-          borderTopColor: "#e5e7eb",
+          backgroundColor: colors.background.DEFAULT,
+          borderTopWidth: 0,
           height: 80,
-          paddingBottom: 20,
+          paddingBottom: 24,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
@@ -49,7 +48,7 @@ export default function AppLayout() {
           fontWeight: "500",
         },
         headerStyle: {
-          backgroundColor: themeColors.primary,
+          backgroundColor: colors.background.DEFAULT,
           borderBottomWidth: 0,
           shadowColor: "transparent",
         },

@@ -3,7 +3,6 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ToastProvider } from "@/providers/ToastProvider";
-import { themeColors } from "@/src/constants/colors";
 
 import "@/global.css";
 
@@ -11,13 +10,6 @@ function RootLayoutNav() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: themeColors.primary,
-        },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
         headerShown: false,
       }}
     >

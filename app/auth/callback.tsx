@@ -1,4 +1,5 @@
 import Button from "@/src/components/ui/button";
+import { colors } from "@/src/theme/colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router/build/imperative-api";
 import { ComponentProps, useEffect, useRef, useState } from "react";
@@ -131,7 +132,7 @@ export default function AuthCallbackScreen() {
     return (
       <AuthPageWrapper>
         <View className="w-full max-w-sm gap-8">
-          <ActivityIndicator size="large" color="#ffffff" />
+          <ActivityIndicator size="large" color={colors.background[500]} />
           <View className="gap-2">
             <Text className="text-2xl font-bold text-white text-center">
               Checking your credentials
@@ -155,7 +156,7 @@ export default function AuthCallbackScreen() {
             <MaterialCommunityIcons
               name={errorContent.icon}
               size={42}
-              color="white"
+              color={colors.background[500]}
             />
 
             <Text className="text-2xl font-bold text-white">
@@ -184,7 +185,7 @@ export default function AuthCallbackScreen() {
   return (
     <AuthPageWrapper>
       <View className="w-full max-w-sm gap-8">
-        <ActivityIndicator size="large" color="#ffffff" />
+        <ActivityIndicator size="large" color={colors.background[500]} />
         <View className="gap-2">
           <Text className="text-2xl font-bold text-white text-center">
             Checking your credentials

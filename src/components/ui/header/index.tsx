@@ -13,7 +13,7 @@ interface HeaderProps extends ViewProps {
 export default function Header({
   title,
   subtitle,
-  backgroundColor = "bg-primary-500",
+  backgroundColor = "bg-primary",
   titleColor = "text-white",
   subtitleColor = "text-blue-100",
   className,

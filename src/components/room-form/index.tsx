@@ -1,31 +1,23 @@
-import { themeColors } from "@/src/constants/colors";
-import { useFloorOptions } from "@/src/hooks/use-floor-options";
+import { useFloorOptions } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import {
   defaultRoomFormValues,
   RoomFormData,
   roomFormSchema,
 } from "@/src/validations/room-form";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import React, { useState } from "react";
+import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import ModalActions from "../modal-actions";
-import Toast from "../ui/toast";
+import AmenitiesSection from "./AmenitiesSection";
+import PickerField from "./PickerField";
+import RoomTypeSelector from "./RoomTypeSelector";
 
 interface RoomFormProps {
   initialData?: Partial<RoomWithDetails>;
   onSubmit: (data: RoomFormData) => Promise<void>;
   onSuccess?: () => void;
+  onError?: (error: Error) => void;
   onCancel?: () => void;
   submitButtonText?: string;
   isLoading?: boolean;
@@ -34,23 +26,13 @@ export default function RoomForm({
   initialData,
   onSubmit,
   onSuccess,
+  onError,
   onCancel,
   submitButtonText = "Save",
   isLoading = false,
 }: RoomFormProps) {
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error" | "info">(
-    "error"
-  );
-  const [showFloorPicker, setShowFloorPicker] = useState(false);
-  const [tempFloorValue, setTempFloorValue] = useState(0);
-  const [showSeatsPicker, setShowSeatsPicker] = useState(false);
-  const [tempSeatsValue, setTempSeatsValue] = useState(1);
-
   const floorOptions = useFloorOptions();
 
-  // Generate seats options from 1 to 120
   const seatsOptions = Array.from({ length: 120 }, (_, i) => ({
     value: i + 1,
     label: `${i + 1} ${i + 1 === 1 ? "seat" : "seats"}`,
@@ -64,7 +46,6 @@ export default function RoomForm({
   } = useForm<RoomFormData>({
     defaultValues: {
       ...defaultRoomFormValues,
-      // Convert room data to form data if editing
       ...(initialData && {
         name: initialData.name || "",
         description: initialData.description || "",
@@ -74,85 +55,44 @@ export default function RoomForm({
         elevator: initialData.has_elevator || false,
         petFriendly: initialData.pet_friendly || false,
         floor: initialData.floor || 1,
-        color: themeColors.primary, // Default color since it's not in the database
+        color: "#f78509",
       }),
     },
   });
 
-  const showToastNotification = (
-    message: string,
-    type: "success" | "error" | "info" = "error"
-  ) => {
-    setToastMessage(message);
-    setToastType(type);
-    setShowToast(true);
-  };
-
-  const validateForm = (data: RoomFormData): boolean => {
+  const validateForm = (data: RoomFormData): string | null => {
     try {
       roomFormSchema.parse(data);
-      return true;
+      return null;
     } catch (error) {
-      console.error("Form validation error:", error);
-
-      // Show specific validation error if available
       if (error instanceof Error && "issues" in error) {
         const zodError = error as any;
-        if (zodError.issues && zodError.issues.length > 0) {
-          const firstIssue = zodError.issues[0];
-          showToastNotification(firstIssue.message, "error");
-          return false;
+        if (zodError.issues?.[0]?.message) {
+          return zodError.issues[0].message;
         }
       }
-
-      showToastNotification("Please check the form for errors", "error");
-      return false;
+      return "Please check the form for errors";
     }
   };
 
-  const onFormSubmit = async (data: any) => {
-    const formData = data as RoomFormData;
-
-    // Validate using Zod schema
-    if (!validateForm(formData)) {
+  const onFormSubmit = async (data: RoomFormData) => {
+    const validationError = validateForm(data);
+    if (validationError) {
       return;
     }
 
     try {
-      await onSubmit(formData);
+      await onSubmit(data);
 
-      // Reset form if creating new room
       if (!initialData?.id) {
         reset(defaultRoomFormValues);
       }
 
-      // Show success toast first
-      const successMessage = initialData?.id
-        ? "Room updated successfully!"
-        : "Room created successfully!";
-      showToastNotification(successMessage, "success");
-
-      // Call success callback after a delay to allow toast to show
-      setTimeout(() => {
-        onSuccess?.();
-      }, 1500);
+      onSuccess?.();
     } catch (error) {
-      console.error("Failed to save room:", error);
-
-      // Extract error message if available
-      let errorMessage = "Failed to save room. Please try again.";
-      if (error instanceof Error) {
-        errorMessage = error.message || errorMessage;
-
-        // Log more details for debugging
-        console.log("🔍 Error details:", {
-          message: error.message,
-          name: error.name,
-          stack: error.stack,
-        });
-      }
-
-      showToastNotification(errorMessage, "error");
+      onError?.(
+        error instanceof Error ? error : new Error("Failed to save room")
+      );
     }
   };
 
@@ -160,13 +100,11 @@ export default function RoomForm({
 
   return (
     <>
-      <ScrollView className="flex-1 bg-white">
-        <View className="p-8 gap-6">
+      <ScrollView className="flex-1">
+        <View className="p-8 gap-4">
           {/* Room Name */}
           <View className="gap-2">
-            <Text className="text-base font-semibold text-gray-900">
-              Room Name *
-            </Text>
+            <Text className="text-base font-semibold">Room Name</Text>
             <Controller
               control={control}
               name="name"
@@ -180,8 +118,8 @@ export default function RoomForm({
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   className={`
-                    border rounded-lg p-3 text-base
-                    ${errors.name ? "border-red-500" : "border-gray-300"}
+                    border rounded-lg p-4 text-base bg-white
+                    ${errors.name ? "border-error" : "border-gray-200"}
                   `.trim()}
                   placeholder="Enter room name"
                   value={value}
@@ -192,17 +130,13 @@ export default function RoomForm({
               )}
             />
             {errors.name && (
-              <Text className="text-red-500 text-sm">
-                {errors.name.message}
-              </Text>
+              <Text className="text-error text-sm">{errors.name.message}</Text>
             )}
           </View>
 
           {/* Description */}
           <View className="gap-2">
-            <Text className="text-base font-semibold text-gray-900">
-              Description
-            </Text>
+            <Text className="text-base font-semibold">Description</Text>
             <Controller
               control={control}
               name="description"
@@ -215,8 +149,8 @@ export default function RoomForm({
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   className={`
-                    border rounded-lg p-3 text-base min-h-[80px]
-                    ${errors.description ? "border-red-500" : "border-gray-300"}
+                    border rounded-lg p-3 text-base bg-white h-24
+                    ${errors.description ? "border-error" : "border-gray-200"}
                   `.trim()}
                   placeholder="Enter room description (optional)"
                   value={value || ""}
@@ -229,449 +163,95 @@ export default function RoomForm({
               )}
             />
             {errors.description && (
-              <Text className="text-red-500 text-sm">
+              <Text className="text-error text-sm">
                 {errors.description.message}
               </Text>
             )}
           </View>
 
           {/* Room Type Switcher */}
-          <View className="gap-4">
-            <Text className="text-base font-semibold text-gray-900">
-              Room Type
-            </Text>
-            <Controller
-              control={control}
-              name="meeting"
-              render={({ field: { onChange, value } }) => (
-                <View className="flex-row gap-4">
-                  <TouchableOpacity
-                    onPress={() => onChange(false)}
-                    className={`
-                      flex-1 flex-row items-center justify-center p-4 rounded-lg border-2
-                      ${
-                        !value
-                          ? "bg-primary-50 border-primary-500"
-                          : "bg-gray-50 border-gray-300"
-                      }
-                    `.trim()}
-                  >
-                    <MaterialCommunityIcons
-                      name="account"
-                      size={24}
-                      color={
-                        !value ? themeColors.primary : themeColors.textSecondary
-                      }
-                      style={{ marginRight: 8 }}
-                    />
-                    <Text
-                      className={`
-                        font-medium
-                        ${!value ? "text-primary-600" : "text-gray-600"}
-                      `.trim()}
-                    >
-                      Workspace
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={() => onChange(true)}
-                    className={`
-                      flex-1 flex-row items-center justify-center p-4 rounded-lg border-2
-                      ${
-                        value
-                          ? "bg-primary-50 border-primary-500"
-                          : "bg-gray-50 border-gray-300"
-                      }
-                    `.trim()}
-                  >
-                    <MaterialCommunityIcons
-                      name="account-group"
-                      size={24}
-                      color={
-                        value ? themeColors.primary : themeColors.textSecondary
-                      }
-                      style={{ marginRight: 8 }}
-                    />
-                    <Text
-                      className={`
-                        font-medium
-                        ${value ? "text-primary-600" : "text-gray-600"}
-                      `.trim()}
-                    >
-                      Meeting Room
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            />
-          </View>
+          <Controller
+            control={control}
+            name="meeting"
+            render={({ field: { onChange, value } }) => (
+              <RoomTypeSelector value={value} onChange={onChange} />
+            )}
+          />
 
           <View className="flex-row gap-4">
             {/* Total Seats */}
-            <View className="flex-1 gap-2">
-              <Text className="text-base font-semibold text-gray-900">
-                Total Seats *
-              </Text>
-              <Controller
-                control={control}
-                name="totalSeats"
-                rules={{
-                  required: "Total seats is required",
-                  min: {
-                    value: 1,
-                    message: "Total seats must be at least 1",
-                  },
-                  max: {
-                    value: 120,
-                    message: "Total seats cannot exceed 120",
-                  },
-                }}
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setTempSeatsValue(value);
-                        setShowSeatsPicker(true);
-                      }}
-                      className={`
-                        border rounded-lg p-3 min-h-[50px] justify-center bg-white
-                        ${
-                          errors.totalSeats
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }
-                      `.trim()}
-                    >
-                      <Text className="text-base text-gray-900">
-                        {value} {value === 1 ? "seat" : "seats"}
-                      </Text>
-                    </TouchableOpacity>
-
-                    <Modal
-                      visible={showSeatsPicker}
-                      transparent={true}
-                      animationType="slide"
-                    >
-                      <Pressable
-                        className="flex-1 justify-end bg-black/50"
-                        onPress={() => setShowSeatsPicker(false)}
-                      >
-                        <View className="bg-white max-h-[500px]">
-                          <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                            <TouchableOpacity
-                              onPress={() => setShowSeatsPicker(false)}
-                            >
-                              <Text className="text-primary-600 text-base">
-                                Cancel
-                              </Text>
-                            </TouchableOpacity>
-                            <Text className="text-base font-semibold">
-                              Select Total Seats
-                            </Text>
-                            <TouchableOpacity
-                              onPress={() => {
-                                onChange(tempSeatsValue);
-                                setShowSeatsPicker(false);
-                              }}
-                            >
-                              <Text className="text-primary-600 text-base font-semibold">
-                                Done
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                          <ScrollView className="max-h-[400px]">
-                            {seatsOptions.map((option) => (
-                              <TouchableOpacity
-                                key={option.value}
-                                onPress={() => {
-                                  setTempSeatsValue(option.value);
-                                  onChange(option.value);
-                                  setShowSeatsPicker(false);
-                                }}
-                                className={`
-                                  p-4 border-b border-gray-100
-                                  ${
-                                    value === option.value
-                                      ? "bg-primary-50"
-                                      : "bg-white"
-                                  }
-                                `.trim()}
-                              >
-                                <View className="flex-row items-center justify-between">
-                                  <Text
-                                    className={`
-                                      text-base
-                                      ${
-                                        value === option.value
-                                          ? "text-primary-600 font-semibold"
-                                          : "text-gray-900"
-                                      }
-                                    `.trim()}
-                                  >
-                                    {option.label}
-                                  </Text>
-                                  {value === option.value && (
-                                    <MaterialCommunityIcons
-                                      name="check"
-                                      size={20}
-                                      color={themeColors.primary}
-                                    />
-                                  )}
-                                </View>
-                              </TouchableOpacity>
-                            ))}
-                          </ScrollView>
-                        </View>
-                      </Pressable>
-                    </Modal>
-                  </>
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="totalSeats"
+              rules={{
+                required: "Total seats is required",
+                min: { value: 1, message: "Total seats must be at least 1" },
+                max: { value: 120, message: "Total seats cannot exceed 120" },
+              }}
+              render={({ field: { onChange, value } }) => (
+                <PickerField
+                  label="Total Seats"
+                  value={value}
+                  options={seatsOptions}
+                  onChange={onChange}
+                  error={errors.totalSeats?.message}
+                />
+              )}
+            />
 
             {/* Floor */}
-            <View className="flex-1 gap-2">
-              <Text className="text-base font-semibold text-gray-900">
-                Floor *
-              </Text>
-              <Controller
-                control={control}
-                name="floor"
-                rules={{
-                  required: "Floor is required",
-                }}
-                render={({ field: { onChange, value } }) => {
-                  const selectedOption = floorOptions.find(
-                    (opt) => opt.value === value
-                  );
-
-                  return (
-                    <>
-                      <TouchableOpacity
-                        onPress={() => {
-                          setTempFloorValue(value);
-                          setShowFloorPicker(true);
-                        }}
-                        className={`
-                          border rounded-lg p-3 min-h-[50px] justify-center bg-white
-                          ${errors.floor ? "border-red-500" : "border-gray-300"}
-                        `.trim()}
-                      >
-                        <Text className="text-base text-gray-900">
-                          {selectedOption?.label || "Select floor"}
-                        </Text>
-                      </TouchableOpacity>
-
-                      <Modal
-                        visible={showFloorPicker}
-                        transparent={true}
-                        animationType="slide"
-                      >
-                        <Pressable
-                          className="flex-1 justify-end bg-black/50"
-                          onPress={() => setShowFloorPicker(false)}
-                        >
-                          <View className="bg-white max-h-[500px]">
-                            <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                              <TouchableOpacity
-                                onPress={() => setShowFloorPicker(false)}
-                              >
-                                <Text className="text-primary-600 text-base">
-                                  Cancel
-                                </Text>
-                              </TouchableOpacity>
-                              <Text className="text-base font-semibold">
-                                Select Floor
-                              </Text>
-                              <TouchableOpacity
-                                onPress={() => {
-                                  onChange(tempFloorValue);
-                                  setShowFloorPicker(false);
-                                }}
-                              >
-                                <Text className="text-primary-600 text-base font-semibold">
-                                  Done
-                                </Text>
-                              </TouchableOpacity>
-                            </View>
-                            <ScrollView className="max-h-[400px]">
-                              {floorOptions.map((option) => (
-                                <TouchableOpacity
-                                  key={option.value}
-                                  onPress={() => {
-                                    setTempFloorValue(option.value);
-                                    onChange(option.value);
-                                    setShowFloorPicker(false);
-                                  }}
-                                  className={`
-                                    p-4 border-b border-gray-100
-                                    ${
-                                      value === option.value
-                                        ? "bg-primary-50"
-                                        : "bg-white"
-                                    }
-                                  `.trim()}
-                                >
-                                  <View className="flex-row items-center justify-between">
-                                    <Text
-                                      className={`
-                                        text-base
-                                        ${
-                                          value === option.value
-                                            ? "text-primary-600 font-semibold"
-                                            : "text-gray-900"
-                                        }
-                                      `.trim()}
-                                    >
-                                      {option.label}
-                                    </Text>
-                                    {value === option.value && (
-                                      <MaterialCommunityIcons
-                                        name="check"
-                                        size={20}
-                                        color={themeColors.primary}
-                                      />
-                                    )}
-                                  </View>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        </Pressable>
-                      </Modal>
-                    </>
-                  );
-                }}
-              />
-              {errors.floor && (
-                <Text className="text-red-500 text-sm">
-                  {errors.floor.message}
-                </Text>
+            <Controller
+              control={control}
+              name="floor"
+              rules={{ required: "Floor is required" }}
+              render={({ field: { onChange, value } }) => (
+                <PickerField
+                  label="Floor"
+                  value={value}
+                  options={floorOptions}
+                  onChange={onChange}
+                  error={errors.floor?.message}
+                />
               )}
-            </View>
+            />
           </View>
 
           {/* Amenities */}
-          <View className="gap-4">
-            <Text className="text-base font-semibold text-gray-900">
-              Amenities
-            </Text>
-
-            {/* Wheelchair Accessible */}
-            <Controller
-              control={control}
-              name="wheelchair"
-              render={({ field: { onChange, value } }) => (
-                <View className="flex-row items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <View className="flex-row items-center gap-3">
-                    <MaterialCommunityIcons
-                      name="wheelchair-accessibility"
-                      size={24}
-                      color={themeColors.textSecondary}
-                    />
-                    <View>
-                      <Text className="text-base font-medium text-gray-900">
-                        Wheelchair Accessible
-                      </Text>
-                      <Text className="text-sm text-gray-600">
-                        Accessible for wheelchair users
-                      </Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={value}
-                    onValueChange={onChange}
-                    trackColor={{
-                      false: themeColors.switchTrackInactive,
-                      true: themeColors.switchTrackActive,
-                    }}
-                    thumbColor={
-                      value
-                        ? themeColors.switchThumbActive
-                        : themeColors.switchThumbInactive
-                    }
+          <Controller
+            control={control}
+            name="wheelchair"
+            render={({
+              field: { value: wheelchair, onChange: onWheelchairChange },
+            }) => (
+              <Controller
+                control={control}
+                name="elevator"
+                render={({
+                  field: { value: elevator, onChange: onElevatorChange },
+                }) => (
+                  <Controller
+                    control={control}
+                    name="petFriendly"
+                    render={({
+                      field: {
+                        value: petFriendly,
+                        onChange: onPetFriendlyChange,
+                      },
+                    }) => (
+                      <AmenitiesSection
+                        wheelchair={wheelchair}
+                        elevator={elevator}
+                        petFriendly={petFriendly}
+                        onWheelchairChange={onWheelchairChange}
+                        onElevatorChange={onElevatorChange}
+                        onPetFriendlyChange={onPetFriendlyChange}
+                      />
+                    )}
                   />
-                </View>
-              )}
-            />
-
-            {/* Elevator Access */}
-            <Controller
-              control={control}
-              name="elevator"
-              render={({ field: { onChange, value } }) => (
-                <View className="flex-row items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <View className="flex-row items-center gap-3">
-                    <MaterialCommunityIcons
-                      name="elevator"
-                      size={24}
-                      color={themeColors.textSecondary}
-                    />
-                    <View>
-                      <Text className="text-base font-medium text-gray-900">
-                        Elevator Access
-                      </Text>
-                      <Text className="text-sm text-gray-600">
-                        Accessible by elevator
-                      </Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={value}
-                    onValueChange={onChange}
-                    trackColor={{
-                      false: themeColors.switchTrackInactive,
-                      true: themeColors.switchTrackActive,
-                    }}
-                    thumbColor={
-                      value
-                        ? themeColors.switchThumbActive
-                        : themeColors.switchThumbInactive
-                    }
-                  />
-                </View>
-              )}
-            />
-
-            {/* Pet Friendly */}
-            <Controller
-              control={control}
-              name="petFriendly"
-              render={({ field: { onChange, value } }) => (
-                <View className="flex-row items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <View className="flex-row items-center gap-3">
-                    <MaterialCommunityIcons
-                      name="dog-side"
-                      size={24}
-                      color={themeColors.textSecondary}
-                    />
-                    <View>
-                      <Text className="text-base font-medium text-gray-900">
-                        Pet Friendly
-                      </Text>
-                      <Text className="text-sm text-gray-600">
-                        Allows pets in the room
-                      </Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={value}
-                    onValueChange={onChange}
-                    trackColor={{
-                      false: themeColors.switchTrackInactive,
-                      true: themeColors.switchTrackActive,
-                    }}
-                    thumbColor={
-                      value
-                        ? themeColors.switchThumbActive
-                        : themeColors.switchThumbInactive
-                    }
-                  />
-                </View>
-              )}
-            />
-          </View>
+                )}
+              />
+            )}
+          />
         </View>
       </ScrollView>
 
@@ -683,14 +263,6 @@ export default function RoomForm({
         submitVariant="primary"
         submitIcon="content-save"
         isLoading={isSubmitting || isLoading}
-      />
-
-      {/* Toast Notifications */}
-      <Toast
-        visible={showToast}
-        message={toastMessage}
-        type={toastType}
-        onHide={() => setShowToast(false)}
       />
     </>
   );
