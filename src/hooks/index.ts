@@ -4,7 +4,6 @@ export * from "./use-fetch-room";
 export * from "./use-floor-options";
 export * from "./use-magic-link-tracker";
 export * from "./use-meeting-layout";
-export * from "./use-role";
 export * from "./use-room";
 export * from "./use-room-actions";
 export * from "./use-room-data";

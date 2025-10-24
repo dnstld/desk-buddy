@@ -1,4 +1,5 @@
-import { useRole, useRoom } from "@/src/hooks";
+import { useRole } from "@/providers/RoleProvider";
+import { useRoom } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";

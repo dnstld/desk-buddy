@@ -1,6 +1,6 @@
 import { useAuth } from "@/providers/AuthProvider";
+import { useRole } from "@/providers/RoleProvider";
 import AppPageWrapper from "@/src/components/app-page-wrapper";
-import { useRole } from "@/src/hooks";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";

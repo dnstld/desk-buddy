@@ -1,8 +1,9 @@
+import { useRole } from "@/providers/RoleProvider";
 import AppPageWrapper from "@/src/components/app-page-wrapper";
 import Room from "@/src/components/room";
 import RoomsEmpty from "@/src/components/rooms-empty";
 import FAB from "@/src/components/ui/fab";
-import { useRole, useRooms } from "@/src/hooks";
+import { useRooms } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import { router } from "expo-router";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
