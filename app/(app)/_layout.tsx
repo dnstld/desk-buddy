@@ -4,7 +4,7 @@ import { parseEmailDomain } from "@/src/utils/parse-email-domain";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 
 function CompanyName() {
   const { user } = useAuth();
@@ -22,6 +22,19 @@ function CompanyName() {
   };
 
   return <Text className="text-sm text-white">{getCompanyName()}</Text>;
+}
+
+function Logo() {
+  return (
+    <View className="flex-row items-center gap-1">
+      <MaterialCommunityIcons
+        name="dots-grid"
+        size={16}
+        color={colors.primary.DEFAULT}
+      />
+      <Text className="text-base text-white font-black">WorkSpacey</Text>
+    </View>
+  );
 }
 
 export default function AppLayout() {
@@ -53,9 +66,7 @@ export default function AppLayout() {
           shadowColor: "transparent",
         },
         headerLeft: () => {
-          return (
-            <Text className="text-base text-white font-bold">DeskBuddy</Text>
-          );
+          return <Logo />;
         },
         headerLeftContainerStyle: {
           paddingLeft: 16,
