@@ -8,9 +8,5 @@ export default function AuthLayout() {
     return <Redirect href="/(app)/rooms" />;
   }
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="login" />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
