@@ -1,17 +1,10 @@
 import { useAuth } from "@/providers/AuthProvider";
-import { useRole } from "@/providers/RoleProvider";
+import { useUser } from "@/providers/UserProvider";
 import AppPageWrapper from "@/src/components/app-page-wrapper";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -21,23 +14,18 @@ import Animated, {
 
 export default function Settings() {
   const { user, signOut } = useAuth();
-  const { role, loading: roleLoading } = useRole();
+  const { role, userData } = useUser();
   const router = useRouter();
 
   const translateY = useSharedValue(20);
   const opacity = useSharedValue(0);
 
   useEffect(() => {
-    if (!roleLoading) {
-      translateY.value = withSpring(0);
-      opacity.value = withTiming(1, {
-        duration: 300,
-      });
-    } else {
-      translateY.value = 20;
-      opacity.value = 0;
-    }
-  }, [roleLoading, translateY, opacity]);
+    translateY.value = withSpring(0);
+    opacity.value = withTiming(1, {
+      duration: 300,
+    });
+  }, [translateY, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -64,19 +52,18 @@ export default function Settings() {
             <View style={styles.userInfo}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
-                  {roleLoading ? (
-                    <ActivityIndicator size="small" color="white" />
-                  ) : (
-                    user?.email?.charAt(0).toUpperCase() || "U"
-                  )}
+                  {user?.email?.charAt(0).toUpperCase() || "U"}
                 </Text>
               </View>
-              {!roleLoading && (
-                <Animated.View style={[styles.userDetails, animatedStyle]}>
-                  <Text style={styles.userEmail}>{user.email}</Text>
-                  <Text style={styles.userRole}>{role}</Text>
-                </Animated.View>
-              )}
+              <Animated.View style={[styles.userDetails, animatedStyle]}>
+                <Text style={styles.userEmail}>
+                  {userData?.email || user.email}
+                </Text>
+                {userData?.name && (
+                  <Text style={styles.userName}>{userData.name}</Text>
+                )}
+                <Text style={styles.userRole}>{role}</Text>
+              </Animated.View>
             </View>
           </View>
         </View>
@@ -156,6 +143,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
     marginBottom: 4,
+  },
+  userName: {
+    fontSize: 14,
+    color: "#374151",
+    marginBottom: 2,
   },
   userRole: {
     fontSize: 14,

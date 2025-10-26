@@ -3,6 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ToastProvider } from "@/providers/ToastProvider";
+import { UserProvider } from "@/providers/UserProvider";
 
 import "@/global.css";
 
@@ -26,7 +27,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ToastProvider>
         <AuthProvider>
-          <RootLayoutNav />
+          <UserProvider>
+            <RootLayoutNav />
+          </UserProvider>
         </AuthProvider>
       </ToastProvider>
     </SafeAreaProvider>

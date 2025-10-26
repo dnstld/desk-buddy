@@ -1,11 +1,11 @@
-import { useRole } from "@/providers/RoleProvider";
+import { useUser } from "@/providers/UserProvider";
 import { colors } from "@/src/theme/colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
 import { Text, View } from "react-native";
 
 export default function RoomsEmpty() {
-  const { isMember, isManager, isOwner } = useRole();
+  const { isMember, isManager, isOwner } = useUser();
 
   return (
     <>

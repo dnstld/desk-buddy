@@ -3,7 +3,7 @@ import * as Linking from "expo-linking";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 import { useToast } from "@/providers/ToastProvider";
-import { useDeepLinkAuth } from "@/src/hooks";
+import { useDeepLinkAuth } from "@/src/hooks/use-deep-link-auth";
 import { supabase } from "@/src/lib/supabase";
 
 interface AuthContextType {

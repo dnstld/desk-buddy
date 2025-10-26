@@ -1,4 +1,4 @@
-import { useRole } from "@/providers/RoleProvider";
+import { useUser } from "@/providers/UserProvider";
 import AppPageWrapper from "@/src/components/app-page-wrapper";
 import Room from "@/src/components/room";
 import RoomsEmpty from "@/src/components/rooms-empty";
@@ -10,7 +10,7 @@ import { ActivityIndicator, FlatList, Text, View } from "react-native";
 
 export default function Rooms() {
   const { rooms, loading, error } = useRooms();
-  const { isMember } = useRole();
+  const { isMember } = useUser();
 
   const handleCreateRoom = () => {
     router.push("/(app)/rooms/create");

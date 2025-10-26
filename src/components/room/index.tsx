@@ -1,4 +1,4 @@
-import { useRole } from "@/providers/RoleProvider";
+import { useUser } from "@/providers/UserProvider";
 import { useRoom } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -30,7 +30,7 @@ export default function Room({ room }: RoomProps) {
     hasAmenities,
   } = useRoom(room);
 
-  const { isMember } = useRole();
+  const { isMember } = useUser();
 
   const handleEdit = () => {
     router.push(`/(app)/rooms/edit/${room.id}` as any);
