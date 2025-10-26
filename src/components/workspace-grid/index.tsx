@@ -58,6 +58,7 @@ export default function WorkspaceGrid({
                 isOccupied={seatInfo.isOccupied}
                 user={seatInfo.user}
                 seatIndex={seatIndex}
+                roomType="workspace"
               />
             );
           }

@@ -90,6 +90,7 @@ export default function MeetingGrid({
             isOccupied={seatInfo.isOccupied}
             user={seatInfo.user}
             seatIndex={seatIndex}
+            roomType="meeting"
           />
         ) : null;
       });
@@ -104,6 +105,7 @@ export default function MeetingGrid({
           isOccupied={seatInfo.isOccupied}
           user={seatInfo.user}
           seatIndex={seatIndex}
+          roomType="meeting"
         />
       ) : null;
     };
