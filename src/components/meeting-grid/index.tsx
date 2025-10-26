@@ -121,7 +121,7 @@ export default function MeetingGrid({
           <View className="mr-4">{renderSingleSeat(positions.left)}</View>
 
           {/* Conference table */}
-          <View className="w-40 h-20 bg-gray-200 rounded-lg border-0 shadow-sm border-gray-400" />
+          <View className="w-40 h-20 bg-primary-900 rounded-lg border-0 shadow-sm border-gray-400" />
 
           {/* Right seat */}
           <View className="ml-4">{renderSingleSeat(positions.right)}</View>
