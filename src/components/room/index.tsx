@@ -12,9 +12,10 @@ import ProgressBar from "../ui/progress-bar";
 
 interface RoomProps {
   room: RoomWithDetails;
+  showActions?: boolean;
 }
 
-export default function Room({ room }: RoomProps) {
+export default function Room({ room, showActions = true }: RoomProps) {
   const {
     name,
     seats,
@@ -45,14 +46,13 @@ export default function Room({ room }: RoomProps) {
   };
 
   return (
-    <View className="bg-white rounded-lg shadow-sm p-4 gap-3">
+    <View className="bg-background-50 rounded-lg shadow-sm p-4 gap-4">
       {/* Admin actions */}
-      {!isMember && (
+      {!isMember && showActions && (
         <View className="flex-row justify-end items-center gap-4 mb-2">
           <Button
             title="Delete"
             icon="delete"
-            size="sm"
             variant="danger-ghost"
             onPress={handleDelete}
             className="mr-auto"
@@ -60,7 +60,6 @@ export default function Room({ room }: RoomProps) {
           <Button
             title="Edit"
             icon="pencil"
-            size="sm"
             variant="primary-outline"
             onPress={handleEdit}
           />
@@ -68,7 +67,6 @@ export default function Room({ room }: RoomProps) {
             <Button
               title="Publish"
               icon="publish"
-              size="sm"
               variant="success"
               onPress={handlePublish}
             />
@@ -78,13 +76,13 @@ export default function Room({ room }: RoomProps) {
 
       <View className="flex-row gap-8">
         {/* 3 of 10 seats available */}
-        <View className="flex-1">
-          <View className="flex-row gap-1 items-center">
+        <View className="flex-1 gap-2">
+          <View className="flex-row gap-2 items-center">
             <MaterialCommunityIcons name="seat" />
             <Text className="text-sm text-gray">{occupancyText}</Text>
           </View>
 
-          <ProgressBar progress={percentOccupied} className="mb-2" />
+          <ProgressBar progress={percentOccupied} />
 
           {/* Badges and floor */}
           <View className="flex-row items-center justify-between">
@@ -102,16 +100,20 @@ export default function Room({ room }: RoomProps) {
       </View>
 
       {/* Room name */}
-      <Text className="text-2xl font-bold leading-tight flex-1">{name}</Text>
-
-      {description && (
-        <Text className="text-sm text-gray" numberOfLines={2}>
-          {description}
+      <View>
+        <Text className="text-2xl font-bold leading-tight flex-1 mb-2">
+          {name}
         </Text>
-      )}
+
+        {description && (
+          <Text className="text-sm text-gray" numberOfLines={3}>
+            {description}
+          </Text>
+        )}
+      </View>
 
       {/* Seats */}
-      <View className="bg-gray-100 rounded-lg">
+      <View className="bg-white rounded-lg shadow-sm">
         <SeatGrid seats={seats} meeting={meeting} />
       </View>
 
@@ -128,7 +130,6 @@ export default function Room({ room }: RoomProps) {
                   color="#6B7280"
                 />
               }
-              size="sm"
             />
           )}
           {elevator && (
@@ -142,7 +143,6 @@ export default function Room({ room }: RoomProps) {
                   color="#6B7280"
                 />
               }
-              size="sm"
             />
           )}
           {pet_friendly && (
@@ -156,7 +156,6 @@ export default function Room({ room }: RoomProps) {
                   color="#6B7280"
                 />
               }
-              size="sm"
             />
           )}
         </View>
