@@ -85,7 +85,7 @@ export const colors = {
     950: '#030712',
   },
   background: {
-    DEFAULT: '#17253a',
+    DEFAULT: '#131e34',
     50: '#f3f6fc',
     100: '#e7eef7',
     200: '#c9daee',
@@ -96,7 +96,7 @@ export const colors = {
     700: '#264e7e',
     800: '#234369',
     900: '#223a58',
-    950: '#17253a',
+    950: '#131e34',
   },
 } as const;
 
