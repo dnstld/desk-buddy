@@ -1,4 +1,5 @@
 import { useAuth } from "@/providers/AuthProvider";
+import AppLoading from "@/src/components/app-loading";
 import { colors } from "@/src/theme/colors";
 import { parseEmailDomain } from "@/src/utils/parse-email-domain";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -38,9 +39,13 @@ function Logo() {
 }
 
 export default function AppLayout() {
-  const { session, loading } = useAuth();
+  const { session, isLoading } = useAuth();
 
-  if (!loading && !session) {
+  if (isLoading) {
+    return <AppLoading />;
+  }
+
+  if (!session) {
     return <Redirect href="/(auth)/login" />;
   }
 

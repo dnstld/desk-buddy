@@ -2,8 +2,8 @@ import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider } from "@/providers/AuthProvider";
+import { QueryProvider } from "@/providers/QueryProvider";
 import { ToastProvider } from "@/providers/ToastProvider";
-import { UserProvider } from "@/providers/UserProvider";
 
 import "@/global.css";
 
@@ -25,13 +25,13 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <UserProvider>
+      <QueryProvider>
+        <ToastProvider>
+          <AuthProvider>
             <RootLayoutNav />
-          </UserProvider>
-        </AuthProvider>
-      </ToastProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </QueryProvider>
     </SafeAreaProvider>
   );
 }

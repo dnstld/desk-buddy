@@ -1,103 +1,156 @@
-import { Session, User } from "@supabase/supabase-js";
-import * as Linking from "expo-linking";
-import React, { createContext, useContext, useEffect, useState } from "react";
-
-import { useToast } from "@/providers/ToastProvider";
 import { useDeepLinkAuth } from "@/src/hooks/use-deep-link-auth";
 import { supabase } from "@/src/lib/supabase";
+import { normalizeEmail } from "@/src/utils/auth";
+import { Session, User } from "@supabase/supabase-js";
+import * as Linking from "expo-linking";
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
-  loading: boolean;
+  isLoading: boolean;
+
   authError: string | null;
-  authErrorType: "expired" | "used" | "invalid" | null;
-  signOut: () => Promise<void>;
+  isAuthenticating: boolean;
+
+  isSigningIn: boolean;
+  isSigningOut: boolean;
+  signInError: string | null;
+
   signInWithOtp: (email: string) => Promise<void>;
+  signOut: () => Promise<void>;
   clearAuthError: () => void;
+  clearSignInError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
 
 interface AuthProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
+
+const REDIRECT_URL = __DEV__ ? null : process.env.EXPO_PUBLIC_REDIRECT_URL;
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { showError } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signInError, setSignInError] = useState<string | null>(null);
 
   const {
     authError,
-    authErrorType,
-    clearAuthError,
-    resetForNewEmail,
-    resetAll,
+    isProcessing: isAuthenticating,
+    clearError: clearAuthError,
+    reset: resetDeepLinkAuth,
   } = useDeepLinkAuth();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      setLoading(false);
+      setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [resetDeepLinkAuth]);
+
+  const signInWithOtp = useCallback(async (email: string) => {
+    setIsSigningIn(true);
+    setSignInError(null);
+
+    try {
+      const normalizedEmail = normalizeEmail(email);
+
+      const redirectUrl = __DEV__
+        ? Linking.createURL("/auth/callback")
+        : `${REDIRECT_URL}/auth/callback`;
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email: normalizedEmail,
+        options: {
+          emailRedirectTo: redirectUrl,
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) {
+        setSignInError(error.message);
+        throw error;
+      }
+    } finally {
+      setIsSigningIn(false);
+    }
   }, []);
 
-  const signInWithOtp = async (email: string) => {
-    resetForNewEmail(email);
+  const signOut = useCallback(async () => {
+    setIsSigningOut(true);
 
-    const redirectUrl = __DEV__
-      ? Linking.createURL("/auth/callback")
-      : (process.env.EXPO_PUBLIC_REDIRECT_URL || "") + "/auth/callback";
+    try {
+      const { error } = await supabase.auth.signOut();
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
-    });
+      if (error) {
+        throw error;
+      }
 
-    if (error) {
-      throw error;
+      resetDeepLinkAuth();
+    } finally {
+      setIsSigningOut(false);
     }
-  };
+  }, [resetDeepLinkAuth]);
 
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      showError("Failed to sign out");
-    } else {
-      resetAll();
-    }
-  };
+  const clearSignInError = useCallback(() => {
+    setSignInError(null);
+  }, []);
 
-  const value: AuthContextType = {
-    session,
-    user: session?.user ?? null,
-    loading,
-    authError,
-    authErrorType,
-    signOut,
-    signInWithOtp,
-    clearAuthError,
-  };
+  const value = useMemo<AuthContextType>(
+    () => ({
+      session,
+      user: session?.user ?? null,
+      isLoading,
+      authError,
+      isAuthenticating,
+      isSigningIn,
+      isSigningOut,
+      signInError,
+      signInWithOtp,
+      signOut,
+      clearAuthError,
+      clearSignInError,
+    }),
+    [
+      session,
+      isLoading,
+      authError,
+      isAuthenticating,
+      isSigningIn,
+      isSigningOut,
+      signInError,
+      signInWithOtp,
+      signOut,
+      clearAuthError,
+      clearSignInError,
+    ]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

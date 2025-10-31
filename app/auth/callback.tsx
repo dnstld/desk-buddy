@@ -1,168 +1,83 @@
+import AppLoading from "@/src/components/app-loading";
 import Button from "@/src/components/ui/button";
 import { colors } from "@/src/theme/colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { router } from "expo-router/build/imperative-api";
-import { ComponentProps, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { router } from "expo-router";
+import { useEffect } from "react";
+import { Text, View } from "react-native";
 import { useAuth } from "../../providers/AuthProvider";
 import CallbackPageWrapper from "../../src/components/callback-page-wrapper";
-import { useAuthTimeout } from "../../src/hooks/use-auth-timeout";
-import { handleUserSignIn } from "../../src/lib/auth-service";
-
-type ErrorType = "used" | "expired" | "invalid" | "generic";
-
-interface ErrorContent {
-  icon: ComponentProps<typeof MaterialCommunityIcons>["name"];
-  title: string;
-  message: string;
-}
+import { useHandleUserSignIn } from "../../src/hooks/use-handle-user-signin";
 
 export default function AuthCallbackScreen() {
+  const { session, isLoading: isAuthLoading, authError, signOut } = useAuth();
   const {
-    session,
-    loading,
-    authError,
-    authErrorType,
-    clearAuthError,
-    signOut,
-  } = useAuth();
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const hasProcessed = useRef(false);
-
-  useAuthTimeout({
-    loading,
-    session,
-    authError,
-    onTimeout: () => {
-      setHasError(true);
-      setErrorMessage("Authentication timeout. Please try again.");
-    },
-  });
+    mutateAsync: signInUser,
+    isPending,
+    error: mutationError,
+    status,
+    reset: resetMutation,
+  } = useHandleUserSignIn();
 
   useEffect(() => {
-    if (hasProcessed.current) {
-      return;
-    }
-
-    if (loading) {
-      return;
-    }
+    if (isAuthLoading) return;
+    if (status !== "idle") return;
 
     if (authError && !session) {
-      setHasError(true);
-      setErrorMessage(authError);
+      if (__DEV__) {
+        console.error("[Callback] Auth error detected:", authError);
+      }
       return;
     }
 
     if (session) {
-      hasProcessed.current = true;
-
-      if (authError) {
-        clearAuthError();
-      }
-
-      const processUser = async () => {
-        try {
-          const result = await handleUserSignIn();
-
+      signInUser()
+        .then((result) => {
           if (result.success) {
             router.replace("/(app)/rooms");
-          } else {
-            setHasError(true);
-            setErrorMessage(result.error || "Failed to complete sign in");
           }
-        } catch (error) {
-          setHasError(true);
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred"
-          );
-        }
-      };
-
-      processUser();
+        })
+        .catch((err) => {
+          if (__DEV__) {
+            console.error("[Callback] Sign in error:", err);
+          }
+        });
     }
-  }, [session, loading, authError, clearAuthError]);
+  }, [session, isAuthLoading, authError, status, signInUser]);
 
   const handleRetry = async () => {
+    resetMutation();
     await signOut();
-
-    clearAuthError();
-    setHasError(false);
-
     router.replace("/(auth)/login");
   };
 
-  const getErrorContent = (): ErrorContent => {
-    const errorType = (authErrorType || "generic") as ErrorType;
+  const errorMessage = mutationError
+    ? mutationError instanceof Error
+      ? mutationError.message
+      : "Failed to complete sign in"
+    : authError;
 
-    const errorMap: Record<ErrorType, ErrorContent> = {
-      used: {
-        icon: "email-open",
-        title: "Magic link already used",
-        message: "Your magic link has already been used and is no longer valid",
-      },
-      expired: {
-        icon: "email-sync-outline",
-        title: "Magic link expired",
-        message: "Your magic link has expired or is no longer valid",
-      },
-      invalid: {
-        icon: "email-sync-outline",
-        title: "Invalid magic link",
-        message: "Your magic link is not valid or has been corrupted",
-      },
-      generic: {
-        icon: "email-sync-outline",
-        title: "Oops! Something went wrong",
-        message: "There was an issue signing you in. Please try again",
-      },
-    };
+  const hasError = !!errorMessage;
 
-    return errorMap[errorType];
-  };
-
-  if (session && !loading) {
-    return (
-      <CallbackPageWrapper>
-        <View className="w-full max-w-sm gap-8">
-          <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
-          <View className="gap-2">
-            <Text className="text-2xl font-bold text-white text-center">
-              Checking your credentials
-            </Text>
-            <Text className="text-base text-white text-center">
-              Please wait while we sign you in
-            </Text>
-          </View>
-        </View>
-      </CallbackPageWrapper>
-    );
-  }
-
-  if ((hasError || authError) && !session) {
-    const errorContent = getErrorContent();
-
+  if (hasError) {
     return (
       <CallbackPageWrapper>
         <View className="w-full max-w-sm gap-8">
           <View className="items-center gap-2">
             <MaterialCommunityIcons
-              name={errorContent.icon}
-              size={42}
+              name="alert-circle-outline"
+              size={64}
               color={colors.error.DEFAULT}
             />
 
-            <Text className="text-2xl font-bold text-white">
-              {errorContent.title}
+            <Text className="text-2xl font-bold text-white text-center">
+              Sign In Failed
             </Text>
           </View>
 
-          <View className="items-center">
+          <View className="items-center bg-white/10 rounded-lg p-4">
             <Text className="text-white text-center">
-              {errorContent.message}
+              {errorMessage || "Something went wrong"}
             </Text>
           </View>
 
@@ -178,19 +93,9 @@ export default function AuthCallbackScreen() {
     );
   }
 
-  return (
-    <CallbackPageWrapper>
-      <View className="w-full max-w-sm gap-8">
-        <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
-        <View className="gap-2">
-          <Text className="text-2xl font-bold text-white text-center">
-            Checking your credentials
-          </Text>
-          <Text className="text-base text-white text-center">
-            Please wait while we sign you in
-          </Text>
-        </View>
-      </View>
-    </CallbackPageWrapper>
-  );
+  if (isAuthLoading || isPending) {
+    return <AppLoading />;
+  }
+
+  return <AppLoading />;
 }

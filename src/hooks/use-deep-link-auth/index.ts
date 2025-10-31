@@ -1,142 +1,129 @@
 import { supabase } from "@/src/lib/supabase";
+import {
+  getSupabaseAuthError,
+  parseAuthDeepLink,
+  validateAuthParams,
+} from "@/src/utils/auth";
 import * as Linking from "expo-linking";
-import { useEffect } from "react";
-import { Alert } from "react-native";
-import { useMagicLinkTracker } from "../use-magic-link-tracker";
-
-interface DeepLinkParams {
-  accessToken: string | null;
-  refreshToken: string | null;
-  expiresAt: number | null;
-  errorCode: string | null;
-  errorDescription: string | null;
-}
-
-function parseDeepLinkUrl(url: string): DeepLinkParams {
-  let accessToken: string | null = null;
-  let refreshToken: string | null = null;
-  let expiresAt: number | null = null;
-  let errorCode: string | null = null;
-  let errorDescription: string | null = null;
-
-  if (__DEV__) {
-    // Manual parsing for Expo development URLs (exp:// or exps://)
-    const matches = url.match(/[?&#]([^=&]+)=([^&]*)/g);
-
-    if (matches) {
-      for (const match of matches) {
-        const [key, value] = match.substring(1).split("=");
-        if (key === "access_token") accessToken = decodeURIComponent(value);
-        if (key === "refresh_token") refreshToken = decodeURIComponent(value);
-        if (key === "expires_at")
-          expiresAt = parseInt(decodeURIComponent(value));
-        if (key === "error_code") errorCode = decodeURIComponent(value);
-        if (key === "error_description")
-          errorDescription = decodeURIComponent(value);
-      }
-    }
-  } else {
-    const urlObj = new URL(url);
-    const params = urlObj.searchParams;
-
-    accessToken = params.get("access_token");
-    refreshToken = params.get("refresh_token");
-
-    const expiresAtStr = params.get("expires_at");
-    expiresAt = expiresAtStr ? parseInt(expiresAtStr) : null;
-
-    errorCode = params.get("error_code");
-    errorDescription = params.get("error_description");
-  }
-
-  return { accessToken, refreshToken, expiresAt, errorCode, errorDescription };
-}
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useDeepLinkAuth() {
-  const tracker = useMagicLinkTracker();
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const processedUrlsRef = useRef<Set<string>>(new Set());
+  const isProcessingRef = useRef(false);
+
+  const handleDeepLink = useCallback(async (url: string) => {
+    if (processedUrlsRef.current.has(url)) return;
+    if (isProcessingRef.current) return;
+
+    processedUrlsRef.current.add(url);
+    isProcessingRef.current = true;
+    setIsProcessing(true);
+    setAuthError(null);
+
+    try {
+      const params = parseAuthDeepLink(url);
+
+      const hasAuthParams =
+        params.accessToken ||
+        params.refreshToken ||
+        params.error ||
+        params.errorCode;
+
+      if (!hasAuthParams) return;
+
+      const { tokens, error: validationError } = validateAuthParams(params);
+
+      if (validationError) {
+        if (__DEV__) {
+          console.error("[useDeepLinkAuth] Validation error:", validationError);
+        }
+        setAuthError(validationError);
+        return;
+      }
+
+      if (!tokens) {
+        const error = "Invalid authentication link. Please request a new one.";
+        if (__DEV__) {
+          console.error("[useDeepLinkAuth] No valid tokens");
+        }
+        setAuthError(error);
+        return;
+      }
+
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: tokens.access,
+        refresh_token: tokens.refresh,
+      });
+
+      if (sessionError) {
+        const userError = getSupabaseAuthError(sessionError);
+        setAuthError(userError);
+
+        if (__DEV__) {
+          console.error("[useDeepLinkAuth] Session error:", sessionError);
+        }
+      } else {
+        setAuthError(null);
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+
+      setAuthError("Failed to process authentication link. Please try again.");
+
+      if (__DEV__) {
+        console.error("[useDeepLinkAuth] Unexpected error:", errorMessage);
+      }
+    } finally {
+      isProcessingRef.current = false;
+      setIsProcessing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const handleDeepLink = async (url: string) => {
-      try {
-        const { accessToken, refreshToken, expiresAt, errorCode, errorDescription } =
-          parseDeepLinkUrl(url);
+    let mounted = true;
 
-        if (
-          errorCode === "otp_expired" ||
-          errorCode === "access_denied" ||
-          errorDescription?.includes("expired") ||
-          errorDescription?.includes("invalid")
-        ) {
-          tracker.setExpiredError();
-          return;
+    Linking.getInitialURL()
+      .then((url) => {
+        if (url && mounted) {
+          handleDeepLink(url);
         }
-
-        const linkId = accessToken ? accessToken.substring(0, 20) : url;
-        if (linkId && tracker.isLinkUsed(linkId)) {
-          tracker.setUsedError();
-          return;
+      })
+      .catch((error) => {
+        if (__DEV__) {
+          console.error("[useDeepLinkAuth] Failed to get initial URL:", error);
         }
+      });
 
-        if (tracker.isLinkExpired(expiresAt)) {
-          tracker.setExpiredError();
-          return;
-        }
-
-        if (accessToken && refreshToken) {
-          try {
-            const { error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-
-            if (error) {
-              if (
-                error.message.includes("expired") ||
-                error.message.includes("invalid") ||
-                error.message.includes("JWT") ||
-                error.status === 401
-              ) {
-                tracker.setExpiredError();
-              } else {
-                tracker.setInvalidError(`Authentication failed: ${error.message}`);
-              }
-
-              Alert.alert("Authentication Error", error.message);
-            } else {
-              const linkId = accessToken.substring(0, 20);
-              if (linkId) {
-                tracker.markLinkAsUsed(linkId);
-              }
-              tracker.clearError();
-            }
-          } catch {
-            tracker.setExpiredError();
-            Alert.alert("Authentication Error", "Failed to process magic link");
-          }
-        }
-      } catch {
-        tracker.setInvalidError();
-      }
-    };
-
-    Linking.getInitialURL().then((url) => {
-      if (url) {
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      if (mounted) {
         handleDeepLink(url);
       }
     });
 
-    const subscription = Linking.addEventListener("url", ({ url }) => {
-      handleDeepLink(url);
-    });
+    return () => {
+      mounted = false;
+      subscription?.remove();
+    };
+  }, [handleDeepLink]);
 
-    return () => subscription?.remove();
-  }, [tracker]);
+  const clearError = useCallback(() => {
+    setAuthError(null);
+  }, []);
+
+  const reset = useCallback(() => {
+    setAuthError(null);
+    processedUrlsRef.current.clear();
+    isProcessingRef.current = false;
+  }, []);
 
   return {
-    authError: tracker.error.message || null,
-    authErrorType: tracker.error.type,
-    clearAuthError: tracker.clearError,
-    resetForNewEmail: tracker.resetForNewEmail,
-    resetAll: tracker.resetAll,
+    authError,
+    isProcessing,
+    clearError,
+    reset,
   };
 }
