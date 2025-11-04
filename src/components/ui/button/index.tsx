@@ -1,3 +1,4 @@
+import { colors } from "@/src/theme/colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
@@ -39,7 +40,7 @@ const VARIANT_STYLES: Record<
   "primary-outline": {
     container: "bg-transparent border-primary",
     text: "text-primary",
-    iconColor: "#f78509",
+    iconColor: colors.primary.DEFAULT,
   },
   secondary: {
     container: "bg-gray-600 border-gray-600",
@@ -49,7 +50,7 @@ const VARIANT_STYLES: Record<
   "secondary-outline": {
     container: "bg-transparent border-gray-300",
     text: "text-gray-600",
-    iconColor: "#6B7280",
+    iconColor: colors.secondary.DEFAULT,
   },
   danger: {
     container: "bg-error border-error",
@@ -59,12 +60,12 @@ const VARIANT_STYLES: Record<
   "danger-outline": {
     container: "bg-transparent border-error",
     text: "text-error",
-    iconColor: "#EF4444",
+    iconColor: colors.error.DEFAULT,
   },
   "danger-ghost": {
     container: "bg-transparent border-transparent",
     text: "text-error",
-    iconColor: "#EF4444",
+    iconColor: colors.error.DEFAULT,
   },
   success: {
     container: "bg-success border-success",
@@ -74,12 +75,12 @@ const VARIANT_STYLES: Record<
   "success-outline": {
     container: "bg-transparent border-success",
     text: "text-success",
-    iconColor: "#10B981",
+    iconColor: colors.success.DEFAULT,
   },
   ghost: {
     container: "bg-transparent border-transparent",
     text: "text-primary",
-    iconColor: "#f78509",
+    iconColor: colors.primary.DEFAULT,
   },
 };
 

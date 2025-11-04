@@ -1,16 +1,16 @@
 import { useToast } from "@/providers/ToastProvider";
 import RoomForm from "@/src/components/room-form";
-import { useRoomMutations } from "@/src/hooks";
+import { useCreateRoomMutation } from "@/src/hooks";
 import { RoomFormData } from "@/src/validations/room-form";
 import { router } from "expo-router";
 import { View } from "react-native";
 
 export default function CreateRoom() {
-  const { createRoom } = useRoomMutations();
+  const createRoom = useCreateRoomMutation();
   const { showError, showSuccess } = useToast();
 
   const handleSubmit = async (data: RoomFormData) => {
-    await createRoom(data);
+    await createRoom.mutateAsync(data);
   };
 
   const handleSuccess = () => {

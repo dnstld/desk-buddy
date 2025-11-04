@@ -107,7 +107,7 @@ export default function Toast({
   const toastStyles = getToastStyles();
 
   return (
-    <View className="absolute top-0 left-0 right-0 z-50 px-4 pt-32">
+    <View className="absolute top-0 left-0 right-0 z-50 px-4 pt-16">
       <Animated.View
         style={{
           opacity: fadeAnim,

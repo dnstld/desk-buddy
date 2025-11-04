@@ -1,5 +1,5 @@
 import RoomDelete from "@/src/components/room-delete";
-import { useFetchRoom, useRoomMutations } from "@/src/hooks";
+import { useDeleteRoomMutation, useFetchRoom } from "@/src/hooks";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -7,7 +7,7 @@ import { ActivityIndicator, Text, View } from "react-native";
 export default function DeleteRoom() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { room, loading, error } = useFetchRoom(id);
-  const { deleteRoom } = useRoomMutations();
+  const deleteRoom = useDeleteRoomMutation();
   const [deleting, setDeleting] = useState(false);
 
   const handleSubmit = async () => {
@@ -16,7 +16,7 @@ export default function DeleteRoom() {
     setDeleting(true);
 
     try {
-      await deleteRoom(room.id);
+      await deleteRoom.mutateAsync(room.id);
     } catch (error) {
       throw error;
     } finally {

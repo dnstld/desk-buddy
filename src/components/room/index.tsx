@@ -1,5 +1,4 @@
-import { useUser } from "@/providers/UserProvider";
-import { useRoom } from "@/src/hooks";
+import { useRoom, useUser } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
@@ -49,7 +48,7 @@ export default function Room({ room, showActions = true }: RoomProps) {
     <View className="bg-background-50 rounded-lg shadow-sm p-4 gap-4">
       {/* Admin actions */}
       {!isMember && showActions && (
-        <View className="flex-row justify-end items-center gap-4 mb-2">
+        <View className="flex-row justify-end items-center gap-4">
           <Button
             title="Delete"
             icon="delete"

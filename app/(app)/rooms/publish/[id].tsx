@@ -1,5 +1,5 @@
 import RoomPublish from "@/src/components/room-publish";
-import { useFetchRoom, useRoomMutations } from "@/src/hooks";
+import { useFetchRoom, useToggleRoomPublishMutation } from "@/src/hooks";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -7,7 +7,7 @@ import { ActivityIndicator, Text, View } from "react-native";
 export default function PublishRoom() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { room, loading, error } = useFetchRoom(id);
-  const { publishRoom } = useRoomMutations();
+  const togglePublish = useToggleRoomPublishMutation();
   const [publishing, setPublishing] = useState(false);
 
   const handleSubmit = async () => {
@@ -17,9 +17,10 @@ export default function PublishRoom() {
 
     try {
       const newPublishedState = !room.published;
-      await publishRoom(room.id, newPublishedState);
-
-      const action = newPublishedState ? "published" : "unpublished";
+      await togglePublish.mutateAsync({
+        roomId: room.id,
+        published: newPublishedState,
+      });
     } catch (error) {
       throw error;
     } finally {
@@ -29,7 +30,6 @@ export default function PublishRoom() {
 
   const handleSuccess = () => {
     router.replace("/(app)/rooms/" as any);
-    const action = room?.published ? "unpublished" : "published";
   };
 
   const handleCancel = () => {

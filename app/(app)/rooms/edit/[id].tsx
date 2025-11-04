@@ -1,6 +1,6 @@
 import { useToast } from "@/providers/ToastProvider";
 import RoomForm from "@/src/components/room-form";
-import { useFetchRoom, useRoomMutations } from "@/src/hooks";
+import { useFetchRoom, useUpdateRoomMutation } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import { RoomFormData } from "@/src/validations/room-form";
 import { router, useLocalSearchParams } from "expo-router";
@@ -10,11 +10,14 @@ import { ActivityIndicator, Text, View } from "react-native";
 export default function EditRoom() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { room, setRoom, loading, error } = useFetchRoom(id);
-  const { updateRoom } = useRoomMutations();
+  const updateRoom = useUpdateRoomMutation();
   const { showSuccess, showError } = useToast();
 
   const handleSubmit = async (data: RoomFormData) => {
-    const updatedRoom = await updateRoom(id as string, data);
+    const updatedRoom = await updateRoom.mutateAsync({
+      roomId: id as string,
+      formData: data,
+    });
 
     if (updatedRoom) {
       setRoom(updatedRoom as RoomWithDetails);

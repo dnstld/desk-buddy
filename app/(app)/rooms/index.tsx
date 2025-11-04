@@ -1,15 +1,16 @@
-import { useUser } from "@/providers/UserProvider";
 import AppPageWrapper from "@/src/components/app-page-wrapper";
+import QueryError from "@/src/components/query-error";
 import Room from "@/src/components/room";
 import RoomsEmpty from "@/src/components/rooms-empty";
+import RoomsLoading from "@/src/components/rooms-loading";
 import FAB from "@/src/components/ui/fab";
-import { useRooms } from "@/src/hooks";
+import { useRoomsQuery, useUser } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import { router } from "expo-router";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { FlatList } from "react-native";
 
 export default function Rooms() {
-  const { rooms, loading, error } = useRooms();
+  const { data: rooms, isLoading, error, refetch } = useRoomsQuery();
   const { isMember } = useUser();
 
   const handleCreateRoom = () => {
@@ -20,19 +21,18 @@ export default function Rooms() {
     <Room room={item} />
   );
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" />
-      </View>
-    );
+  if (isLoading) {
+    return <RoomsLoading />;
   }
 
   if (error) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50 p-4">
-        <Text className="text-error text-center mb-4">{error}</Text>
-      </View>
+      <QueryError
+        error={error}
+        onRetry={refetch}
+        title="Failed to load rooms"
+        description="We couldn't fetch your rooms. Please try again."
+      />
     );
   }
 

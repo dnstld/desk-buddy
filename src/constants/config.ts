@@ -50,5 +50,5 @@ export const VALIDATION = {
   ROOM_DESCRIPTION: {
     MAX: 150,
   },
-  MIN_MEETING_SEATS: 2,
+  MIN_MEETING_SEATS: 1,
 } as const;

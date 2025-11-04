@@ -13,9 +13,9 @@ const mockUsers = [
 export const mockRooms: RoomWithDetails[] = [
   {
     id: "mock-workspace-1",
-    name: "Demo: Workspace Room",
+    name: "This is a Workspace Room",
     description:
-      "Room with ergonomic chairs, strong Wi-Fi, multiple outlets, 4K monitors, good lighting, and air conditioning",
+      "Here, you can describe the room and provide helpful information for users selecting a seat",
     floor: 1,
     capacity: 24,
     type: "workspace",
@@ -69,8 +69,8 @@ export const mockRooms: RoomWithDetails[] = [
   },
   {
     id: "mock-meeting-1",
-    name: "Demo: Meeting Room",
-    description: "This room has a projector, video conferencing tools, whiteboard, high-speed Wi-Fi, power outlets, and comfortable seating",
+    name: "This is a Meeting Room",
+    description: "A smaller room designed for focused meetings and collaborations",
     floor: 2,
     capacity: 8,
     type: "meeting",

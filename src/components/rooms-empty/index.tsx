@@ -1,51 +1,60 @@
-import { useUser } from "@/providers/UserProvider";
 import { mockRooms } from "@/src/constants/mock-rooms";
-import React from "react";
-import { Text, View } from "react-native";
-import InfoCards, { type InfoCard } from "../info-cards";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import React, { useState } from "react";
+import { ScrollView, Text, View } from "react-native";
 import Room from "../room";
-
-const infoCards: InfoCard[] = [
-  {
-    id: "welcome",
-    title: "👋 Here's how it works",
-    description:
-      "Create and manage two types of rooms: Workspaces and Meeting Rooms. Once published, these rooms will be available for everyone to book a seat. See the example rooms below!",
-  },
-  {
-    id: "manager",
-    icon: "account-tie-woman" as const,
-    title: "Add Managers",
-    description:
-      "Need help managing your rooms? You can add other users as managers who can assist with room administration tasks",
-  },
-  {
-    id: "ownership",
-    icon: "crown" as const,
-    title: "Transfer Ownership",
-    description:
-      "To transfer ownership to someone else, simply select the user and designate them as the new owner. You will then become a regular member",
-  },
-];
+import Button from "../ui/button";
 
 export default function RoomsEmpty() {
-  const { isMember } = useUser();
+  const [showDemo, setShowDemo] = useState(false);
 
   return (
-    <>
-      {isMember ? (
-        <View>
-          <Text className="text-white">Intro screen for members</Text>
+    <ScrollView>
+      {!showDemo ? (
+        <View className="items-center gap-4 p-8">
+          <View className="w-24 h-24 bg-primary rounded-full justify-center items-center">
+            <MaterialCommunityIcons
+              name="office-building-outline"
+              size={42}
+              color="white"
+            />
+          </View>
+
+          <View className="gap-2">
+            <Text className="text-2xl font-bold text-white text-center">
+              Create your first room
+            </Text>
+            <Text className="text-base text-white/80 text-center leading-6">
+              Once you create a room, you can update its details before
+              publishing it. Once published, it becomes available for
+              reservations
+            </Text>
+          </View>
+
+          <Button
+            title={`View Demo Rooms (${mockRooms.length})`}
+            onPress={() => setShowDemo(true)}
+            variant="secondary"
+            size="md"
+            icon="eye-outline"
+          />
         </View>
       ) : (
-        <View className="gap-6">
-          <InfoCards cards={infoCards} />
-
-          {mockRooms.map((room) => (
-            <Room key={room.id} room={room} showActions={false} />
-          ))}
+        <View className="gap-4">
+          <View className="gap-4 mt-2">
+            {mockRooms.map((room) => (
+              <Room key={room.id} room={room} showActions={false} />
+            ))}
+          </View>
+          <Button
+            title="Hide Demo Rooms"
+            onPress={() => setShowDemo(false)}
+            variant="secondary"
+            size="md"
+            icon="close"
+          />
         </View>
       )}
-    </>
+    </ScrollView>
   );
 }
