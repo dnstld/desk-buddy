@@ -57,13 +57,15 @@ export default function Seat({
     );
   }
 
-  const emptyIconName = roomType === "workspace" ? "monitor" : "account";
-
   return (
     <View key={`seat-${seatIndex}`} className="m-2 relative">
       <View className="w-16 h-16 rounded-full border-2 border-gray-300 overflow-hidden bg-gray-100">
         <View className="w-full h-full bg-primary-50 items-center justify-center">
-          <MaterialCommunityIcons name={emptyIconName} size={28} />
+          <MaterialCommunityIcons
+            name="account-plus-outline"
+            size={28}
+            color={colors.gray.DEFAULT}
+          />
         </View>
       </View>
       <Badge
