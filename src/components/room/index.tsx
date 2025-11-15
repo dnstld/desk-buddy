@@ -2,7 +2,7 @@ import { useRoom, useUser } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useCallback } from "react";
 import { Text, View } from "react-native";
 import SeatGrid from "../seat-grid";
 import Button from "../ui/button";
@@ -16,7 +16,7 @@ interface RoomProps {
   onSeatPress?: (seatIndex: number) => void;
 }
 
-export default function Room({
+function Room({
   room,
   showActions = true,
   editMode = false,
@@ -39,17 +39,17 @@ export default function Room({
 
   const { isMember } = useUser();
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     router.push(`/(app)/rooms/edit/${room.id}` as any);
-  };
+  }, [room.id]);
 
-  const handlePublish = () => {
+  const handlePublish = useCallback(() => {
     router.push(`/(app)/rooms/publish/${room.id}` as any);
-  };
+  }, [room.id]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     router.push(`/(app)/rooms/delete/${room.id}` as any);
-  };
+  }, [room.id]);
 
   return (
     <View className="bg-background-50 rounded-lg shadow-sm p-4 gap-4">
@@ -174,3 +174,20 @@ export default function Room({
     </View>
   );
 }
+
+// Memoize Room component to prevent unnecessary re-renders in FlatList
+// Only re-render when room data actually changes
+export default React.memo(Room, (prevProps, nextProps) => {
+  // Custom comparison function for optimal performance
+  // Return true if props are equal (skip re-render)
+  // Return false if props are different (re-render)
+  return (
+    prevProps.room.id === nextProps.room.id &&
+    prevProps.room.published === nextProps.room.published &&
+    prevProps.showActions === nextProps.showActions &&
+    prevProps.editMode === nextProps.editMode &&
+    prevProps.onSeatPress === nextProps.onSeatPress &&
+    // Deep comparison of seats array length (cheap check)
+    prevProps.room.seats?.length === nextProps.room.seats?.length
+  );
+});
