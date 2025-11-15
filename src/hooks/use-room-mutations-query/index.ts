@@ -1,5 +1,6 @@
 import { useAuth } from "@/providers/AuthProvider";
 import { supabase } from "@/src/lib/supabase";
+import { fetchUserWithCompany, requireAuth } from "@/src/utils/user-helpers";
 import { RoomFormData } from "@/src/validations/room-form";
 import { Database } from "@/supabase/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,33 +16,10 @@ export function useCreateRoomMutation() {
 
   return useMutation({
     mutationFn: async (formData: RoomFormData) => {
-      if (!user) {
-        throw new Error("User must be authenticated to create a room");
-      }
+      requireAuth(user);
 
-      // Get user's company_id
-      const { data: userDataArray, error: userError } = await supabase
-        .from("user")
-        .select("company_id, id, auth_id, email, name")
-        .or(`id.eq.${user.id},auth_id.eq.${user.id}`);
-
-      if (userError) {
-        throw new Error(`Failed to find user in database: ${userError.message}`);
-      }
-
-      if (!userDataArray || userDataArray.length === 0) {
-        throw new Error(
-          `Your user profile is not set up. Please sign out and sign in again, or contact support.`
-        );
-      }
-
-      const userData = userDataArray[0];
-
-      if (!userData?.company_id) {
-        throw new Error(
-          "Your account is not associated with any company. Please contact your administrator."
-        );
-      }
+      // Securely fetch user data with parameterized query (prevents SQL injection)
+      const userData = await fetchUserWithCompany(user.id);
 
       // Prepare room data
       const totalSeats = formData.totalSeats;
@@ -214,33 +192,10 @@ export function useUpdateRoomMutation() {
       roomId: string;
       formData: Partial<RoomFormData>;
     }) => {
-      if (!user) {
-        throw new Error("User must be authenticated to update a room");
-      }
+      requireAuth(user);
 
-      // Get user's company_id
-      const { data: userDataArray, error: userError } = await supabase
-        .from("user")
-        .select("company_id, id, auth_id, email, name")
-        .or(`id.eq.${user.id},auth_id.eq.${user.id}`);
-
-      if (userError) {
-        throw new Error(`Failed to find user in database: ${userError.message}`);
-      }
-
-      if (!userDataArray || userDataArray.length === 0) {
-        throw new Error(
-          `Your user profile is not set up. Please sign out and sign in again, or contact support.`
-        );
-      }
-
-      const userData = userDataArray[0];
-
-      if (!userData?.company_id) {
-        throw new Error(
-          "Your account is not associated with any company. Please contact your administrator."
-        );
-      }
+      // Securely fetch user data with parameterized query (prevents SQL injection)
+      const userData = await fetchUserWithCompany(user.id);
 
       const updateData: Partial<RoomInsert> = {};
 
