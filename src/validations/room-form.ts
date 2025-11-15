@@ -1,6 +1,19 @@
 import { FLOOR_CONFIG, SEATS_CONFIG, VALIDATION } from "@/src/constants/config";
 import { z } from "zod";
 
+// Seat schema - simplified
+export const seatSchema = z.object({
+  id: z.string().optional(), // For editing existing seats
+  number: z.number().int().min(1),
+  isSpecial: z.boolean(),
+  note: z.string().max(VALIDATION.ROOM_DESCRIPTION.MAX, `Note must be less than ${VALIDATION.ROOM_DESCRIPTION.MAX} characters`).optional(),
+  amenities: z.array(z.string()).optional(), // Array of amenity IDs that are enabled
+  pendingAmenities: z.array(z.string()).optional(), // Array of new amenity names to create
+  hasUnsavedAmenityChanges: z.boolean().optional(), // Flag to indicate if amenities were modified
+});
+
+export type SeatFormData = z.infer<typeof seatSchema>;
+
 export const roomFormSchema = z.object({
   name: z
     .string()
@@ -15,17 +28,19 @@ export const roomFormSchema = z.object({
   meeting: z.boolean(),
   
   totalSeats: z
-    .number({ message: "Total seats is required" })
+    .number()
     .int("Total seats must be a whole number")
-    .min(SEATS_CONFIG.MIN, `Total seats must be at least ${SEATS_CONFIG.MIN}`)
+    .min(1, "Must have at least 1 seat")
     .max(SEATS_CONFIG.MAX, `Total seats cannot exceed ${SEATS_CONFIG.MAX}`),
+  
+  seats: z.array(seatSchema),
   
   // Amenities
   wheelchair: z.boolean(),
   elevator: z.boolean(),
   petFriendly: z.boolean(),
   
-  // Additional fields that might be needed
+  // Additional fields
   floor: z
     .number({ message: "Floor is required" })
     .int("Floor must be a whole number")
@@ -34,16 +49,29 @@ export const roomFormSchema = z.object({
     
   color: z.string(),
 })
-.refine((data) => {
-  // Meeting rooms must have at least 2 seats
-  if (data.meeting && data.totalSeats < VALIDATION.MIN_MEETING_SEATS) {
-    return false;
+.refine(
+  (data) => {
+    // Meeting rooms must have at least 2 seats
+    if (data.meeting) {
+      return data.totalSeats >= 2;
+    }
+    return true;
+  },
+  {
+    message: "Meeting rooms must have at least 2 seats",
+    path: ["totalSeats"],
   }
-  return true;
-}, {
-  message: `Meeting rooms must have at least ${VALIDATION.MIN_MEETING_SEATS} seats`,
-  path: ["totalSeats"],
-});
+)
+.refine(
+  (data) => {
+    // All special seats must have notes
+    return data.seats.every(seat => !seat.isSpecial || (seat.note && seat.note.length > 0));
+  },
+  {
+    message: "Special seats must have a note",
+    path: ["seats"],
+  }
+);
 
 export type RoomFormData = z.infer<typeof roomFormSchema>;
 
@@ -53,6 +81,7 @@ export const defaultRoomFormValues: RoomFormData = {
   description: "",
   meeting: false,
   totalSeats: 1,
+  seats: [{ number: 1, isSpecial: false, note: "" }],
   wheelchair: false,
   elevator: false,
   petFriendly: false,

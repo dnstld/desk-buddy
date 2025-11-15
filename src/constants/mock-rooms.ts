@@ -34,11 +34,21 @@ export const mockRooms: RoomWithDetails[] = [
       const userIndex = reservedSeats.indexOf(i + 1); // Each reserved seat gets a unique user
       const mockUser = hasReservation ? mockUsers[userIndex] : null;
 
+      // Add notes to specific seats
+      const seatNotes: Record<number, string> = {
+        1: "This seat is only for developers",
+        3: "Dual monitor setup available",
+        6: "Standing desk - adjustable height",
+        8: "Near the window - natural light",
+        11: "Quiet zone - no phone calls please",
+      };
+
       return {
         id: `mock-seat-workspace-${i + 1}`,
         room_id: "mock-workspace-1",
-        seat_number: i + 1,
+        number: i + 1,
         status: "available" as const,
+        note: seatNotes[i + 1] || null,
         deleted_at: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -91,8 +101,9 @@ export const mockRooms: RoomWithDetails[] = [
       return {
         id: `mock-seat-meeting-${i + 1}`,
         room_id: "mock-meeting-1",
-        seat_number: i + 1,
+        number: i + 1,
         status: "available" as const,
+        note: null,
         deleted_at: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

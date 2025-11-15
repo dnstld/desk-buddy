@@ -32,6 +32,8 @@ interface MeetingGridProps {
   containerWidth: number;
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   onLayout: (event: { nativeEvent: { layout: { width: number } } }) => void;
+  editMode?: boolean;
+  onSeatPress?: (seatIndex: number) => void;
 }
 
 export default function MeetingGrid({
@@ -41,6 +43,8 @@ export default function MeetingGrid({
   containerWidth,
   onScroll,
   onLayout,
+  editMode = false,
+  onSeatPress,
 }: MeetingGridProps) {
   const renderSingleMeetingPage = (pageIndex: number) => {
     const startIndex = pageIndex * seatData.seatsPerPage;
@@ -114,10 +118,13 @@ export default function MeetingGrid({
         return seatInfo ? (
           <Seat
             key={`seat-${seatIndex}`}
+            seat={seatInfo.seat}
             isOccupied={seatInfo.isOccupied}
             user={seatInfo.user}
             seatIndex={seatIndex}
             roomType="meeting"
+            editMode={editMode}
+            onPress={onSeatPress ? () => onSeatPress(seatIndex) : undefined}
           />
         ) : null;
       });
@@ -129,10 +136,13 @@ export default function MeetingGrid({
       return seatInfo ? (
         <Seat
           key={`seat-${seatIndex}`}
+          seat={seatInfo.seat}
           isOccupied={seatInfo.isOccupied}
           user={seatInfo.user}
           seatIndex={seatIndex}
           roomType="meeting"
+          editMode={editMode}
+          onPress={onSeatPress ? () => onSeatPress(seatIndex) : undefined}
         />
       ) : null;
     };

@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      amenities: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "amenities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "amenities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company: {
         Row: {
           created_at: string
@@ -158,6 +197,8 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
+          note: string | null
+          number: number
           room_id: string
           status: Database["public"]["Enums"]["status"]
           updated_at: string | null
@@ -166,6 +207,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          note?: string | null
+          number: number
           room_id: string
           status?: Database["public"]["Enums"]["status"]
           updated_at?: string | null
@@ -174,6 +217,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          note?: string | null
+          number?: number
           room_id?: string
           status?: Database["public"]["Enums"]["status"]
           updated_at?: string | null
@@ -188,6 +233,45 @@ export type Database = {
           },
         ]
       }
+      seat_amenities: {
+        Row: {
+          amenity_id: string | null
+          created_at: string
+          enabled: boolean | null
+          id: string
+          seat_id: string | null
+        }
+        Insert: {
+          amenity_id?: string | null
+          created_at?: string
+          enabled?: boolean | null
+          id?: string
+          seat_id?: string | null
+        }
+        Update: {
+          amenity_id?: string | null
+          created_at?: string
+          enabled?: boolean | null
+          id?: string
+          seat_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seat_amenities_amenity_id_fkey"
+            columns: ["amenity_id"]
+            isOneToOne: false
+            referencedRelation: "amenities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seat_amenities_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "seat"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user: {
         Row: {
           auth_id: string | null
@@ -196,7 +280,7 @@ export type Database = {
           email: string | null
           id: string
           name: string | null
-          role: Database["public"]["Enums"]["roles"] | null
+          role: Database["public"]["Enums"]["roles"]
         }
         Insert: {
           auth_id?: string | null
@@ -205,7 +289,7 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string | null
-          role?: Database["public"]["Enums"]["roles"] | null
+          role?: Database["public"]["Enums"]["roles"]
         }
         Update: {
           auth_id?: string | null
@@ -214,7 +298,7 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string | null
-          role?: Database["public"]["Enums"]["roles"] | null
+          role?: Database["public"]["Enums"]["roles"]
         }
         Relationships: [
           {

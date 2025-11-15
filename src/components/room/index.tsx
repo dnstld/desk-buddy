@@ -12,9 +12,16 @@ import ProgressBar from "../ui/progress-bar";
 interface RoomProps {
   room: RoomWithDetails;
   showActions?: boolean;
+  editMode?: boolean;
+  onSeatPress?: (seatIndex: number) => void;
 }
 
-export default function Room({ room, showActions = true }: RoomProps) {
+export default function Room({
+  room,
+  showActions = true,
+  editMode = false,
+  onSeatPress,
+}: RoomProps) {
   const {
     name,
     seats,
@@ -113,7 +120,12 @@ export default function Room({ room, showActions = true }: RoomProps) {
 
       {/* Seats */}
       <View className="bg-white rounded-lg shadow-sm">
-        <SeatGrid seats={seats} meeting={meeting} />
+        <SeatGrid
+          seats={seats}
+          meeting={meeting}
+          editMode={editMode}
+          onSeatPress={onSeatPress}
+        />
       </View>
 
       {hasAmenities && (

@@ -20,6 +20,11 @@ export function useFetchRoom(id: string | undefined) {
             *,
             seats:seat(
               *,
+              seat_amenities(
+                amenity_id,
+                enabled,
+                amenities(*)
+              ),
               reservation(
                 *,
                 user(*)

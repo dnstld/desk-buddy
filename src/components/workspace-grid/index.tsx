@@ -5,7 +5,8 @@ import {
   ScrollView,
   View,
 } from "react-native";
-import { Seat as SeatType, User } from "../../types/room";
+import { Seat as SeatType } from "../../types/room";
+import { User } from "../../types/user";
 import PaginationIndicator from "../pagination-indicator";
 import Seat from "../seat";
 
@@ -31,6 +32,8 @@ interface WorkspaceGridProps {
   containerWidth: number;
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   onLayout: (event: { nativeEvent: { layout: { width: number } } }) => void;
+  editMode?: boolean;
+  onSeatPress?: (seatIndex: number) => void;
 }
 
 export default function WorkspaceGrid({
@@ -40,6 +43,8 @@ export default function WorkspaceGrid({
   containerWidth,
   onScroll,
   onLayout,
+  editMode = false,
+  onSeatPress,
 }: WorkspaceGridProps) {
   const renderSinglePage = (pageIndex: number) => {
     const gridPositions = [];
@@ -55,10 +60,13 @@ export default function WorkspaceGrid({
             rowSeats.push(
               <Seat
                 key={`seat-${seatIndex}`}
+                seat={seatInfo.seat}
                 isOccupied={seatInfo.isOccupied}
                 user={seatInfo.user}
                 seatIndex={seatIndex}
                 roomType="workspace"
+                editMode={editMode}
+                onPress={onSeatPress ? () => onSeatPress(seatIndex) : undefined}
               />
             );
           }

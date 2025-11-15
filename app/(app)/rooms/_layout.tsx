@@ -43,6 +43,13 @@ export default function RoomsLayout() {
           presentation: "modal",
         }}
       />
+      <Stack.Screen
+        name="seat/[id]"
+        options={{
+          title: "Edit Seat",
+          presentation: "modal",
+        }}
+      />
     </Stack>
   );
 }

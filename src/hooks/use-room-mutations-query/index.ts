@@ -44,11 +44,12 @@ export function useCreateRoomMutation() {
       }
 
       // Prepare room data
+      const totalSeats = formData.totalSeats;
       const roomData: RoomInsert = {
         name: formData.name,
         description: formData.description || null,
         type: formData.meeting ? "meeting" : "workspace",
-        capacity: formData.totalSeats,
+        capacity: totalSeats,
         floor: formData.floor,
         wheelchair_accessible: formData.wheelchair,
         has_elevator: formData.elevator,
@@ -70,11 +71,49 @@ export function useCreateRoomMutation() {
         throw new Error("Room was not created due to Row Level Security policies.");
       }
 
-      // Create seats for the room
-      if (formData.totalSeats > 0) {
-        const seats = Array.from({ length: formData.totalSeats }, () => ({
+      // Step 1: Create pending amenities first and collect their IDs
+      const amenityIdMap = new Map<string, string>(); // Maps pending amenity name to created ID
+
+      if (formData.seats && formData.seats.length > 0) {
+        // Collect all unique pending amenities across all seats
+        const allPendingAmenities = new Set<string>();
+        formData.seats.forEach((seat) => {
+          if (seat.pendingAmenities) {
+            seat.pendingAmenities.forEach((name) => allPendingAmenities.add(name));
+          }
+        });
+
+        console.log(`Creating ${allPendingAmenities.size} pending amenities:`, Array.from(allPendingAmenities));
+
+        // Create each pending amenity
+        for (const amenityName of allPendingAmenities) {
+          const { data: amenityData, error: amenityError } = await supabase
+            .from("amenities")
+            .insert({
+              name: amenityName,
+              company_id: userData.company_id,
+              created_by: userData.id,
+            })
+            .select()
+            .single();
+
+          if (amenityError) {
+            console.error(`Error creating amenity "${amenityName}":`, amenityError);
+            // Continue with other amenities even if one fails
+          } else if (amenityData) {
+            console.log(`Created amenity "${amenityName}" with ID:`, amenityData.id);
+            amenityIdMap.set(amenityName, amenityData.id);
+          }
+        }
+      }
+
+      // Step 2: Create seats for the room
+      if (formData.seats && formData.seats.length > 0) {
+        const seats = formData.seats.map((seat) => ({
           room_id: newRoom.id,
+          number: seat.number,
           status: "available" as const,
+          note: seat.isSpecial ? seat.note || null : null,
         }));
 
         console.log(`Creating ${seats.length} seats for room ${newRoom.id}`);
@@ -90,6 +129,65 @@ export function useCreateRoomMutation() {
         }
 
         console.log(`Successfully created ${insertedSeats?.length || 0} seats`);
+
+        // Step 3: Create seat_amenities for each seat
+        if (insertedSeats && insertedSeats.length > 0) {
+          const allSeatAmenities: {
+            seat_id: string;
+            amenity_id: string;
+            enabled: boolean;
+          }[] = [];
+
+          insertedSeats.forEach((insertedSeat, index) => {
+            const formSeat = formData.seats[index];
+            
+            console.log(`Processing seat ${index + 1}:`, {
+              amenities: formSeat.amenities,
+              pendingAmenities: formSeat.pendingAmenities,
+            });
+            
+            // Combine existing amenity IDs with newly created ones from pending
+            const amenityIds = [...(formSeat.amenities || [])];
+            
+            // Add IDs for pending amenities that were just created
+            if (formSeat.pendingAmenities) {
+              formSeat.pendingAmenities.forEach((name) => {
+                const createdId = amenityIdMap.get(name);
+                if (createdId) {
+                  console.log(`Adding pending amenity "${name}" with ID ${createdId}`);
+                  amenityIds.push(createdId);
+                }
+              });
+            }
+
+            console.log(`Total amenity IDs for seat ${index + 1}:`, amenityIds);
+
+            // Create seat_amenities records
+            amenityIds.forEach((amenityId) => {
+              allSeatAmenities.push({
+                seat_id: insertedSeat.id,
+                amenity_id: amenityId,
+                enabled: true,
+              });
+            });
+          });
+
+          console.log(`Inserting ${allSeatAmenities.length} seat_amenities records:`, allSeatAmenities);
+
+          // Insert all seat_amenities at once
+          if (allSeatAmenities.length > 0) {
+            const { error: seatAmenitiesError } = await supabase
+              .from("seat_amenities")
+              .insert(allSeatAmenities);
+
+            if (seatAmenitiesError) {
+              console.error("Error creating seat amenities:", seatAmenitiesError);
+              // Don't throw - seats were created successfully
+            } else {
+              console.log(`Successfully created ${allSeatAmenities.length} seat amenity associations`);
+            }
+          }
+        }
       }
 
       return newRoom;
@@ -105,6 +203,7 @@ export function useCreateRoomMutation() {
  * Hook for updating a room
  */
 export function useUpdateRoomMutation() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -115,6 +214,34 @@ export function useUpdateRoomMutation() {
       roomId: string;
       formData: Partial<RoomFormData>;
     }) => {
+      if (!user) {
+        throw new Error("User must be authenticated to update a room");
+      }
+
+      // Get user's company_id
+      const { data: userDataArray, error: userError } = await supabase
+        .from("user")
+        .select("company_id, id, auth_id, email, name")
+        .or(`id.eq.${user.id},auth_id.eq.${user.id}`);
+
+      if (userError) {
+        throw new Error(`Failed to find user in database: ${userError.message}`);
+      }
+
+      if (!userDataArray || userDataArray.length === 0) {
+        throw new Error(
+          `Your user profile is not set up. Please sign out and sign in again, or contact support.`
+        );
+      }
+
+      const userData = userDataArray[0];
+
+      if (!userData?.company_id) {
+        throw new Error(
+          "Your account is not associated with any company. Please contact your administrator."
+        );
+      }
+
       const updateData: Partial<RoomInsert> = {};
 
       if (formData.name !== undefined) updateData.name = formData.name;
@@ -129,8 +256,11 @@ export function useUpdateRoomMutation() {
         updateData.pet_friendly = formData.petFriendly;
       if (formData.meeting !== undefined)
         updateData.type = formData.meeting ? "meeting" : "workspace";
-      if (formData.totalSeats !== undefined)
+      
+      // Calculate total seats from new structure
+      if (formData.totalSeats !== undefined) {
         updateData.capacity = formData.totalSeats;
+      }
 
       // Update the room
       const { data, error } = await supabase
@@ -142,44 +272,171 @@ export function useUpdateRoomMutation() {
 
       if (error) throw error;
 
-      // Handle seat count changes
-      if (formData.totalSeats !== undefined) {
-        const { data: currentSeats, error: seatsError } = await supabase
+      // Handle seat updates if seat data is provided
+      if (formData.seats !== undefined) {
+        // Step 1: Create pending amenities first and collect their IDs
+        const amenityIdMap = new Map<string, string>(); // Maps pending amenity name to created ID
+
+        if (formData.seats && formData.seats.length > 0) {
+          // Collect all unique pending amenities across all seats
+          const allPendingAmenities = new Set<string>();
+          formData.seats.forEach((seat) => {
+            if (seat.pendingAmenities) {
+              seat.pendingAmenities.forEach((name) => allPendingAmenities.add(name));
+            }
+          });
+
+          console.log(`[UPDATE] Creating ${allPendingAmenities.size} pending amenities:`, Array.from(allPendingAmenities));
+
+          // Create each pending amenity
+          for (const amenityName of allPendingAmenities) {
+            const { data: amenityData, error: amenityError } = await supabase
+              .from("amenities")
+              .insert({
+                name: amenityName,
+                company_id: userData.company_id,
+                created_by: userData.id,
+              })
+              .select()
+              .single();
+
+            if (amenityError) {
+              console.error(`[UPDATE] Error creating amenity "${amenityName}":`, amenityError);
+              // Continue with other amenities even if one fails
+            } else if (amenityData) {
+              console.log(`[UPDATE] Created amenity "${amenityName}" with ID:`, amenityData.id);
+              amenityIdMap.set(amenityName, amenityData.id);
+            }
+          }
+        }
+
+        // Step 2: Delete all existing seat_amenities and seats for this room
+        // First, get all seat IDs for this room
+        const { data: existingSeats, error: fetchSeatsError } = await supabase
           .from("seat")
           .select("id")
-          .eq("room_id", roomId)
-          .is("deleted_at", null);
+          .eq("room_id", roomId);
 
-        if (seatsError) throw seatsError;
+        if (fetchSeatsError) {
+          console.error("[UPDATE] Error fetching existing seats:", fetchSeatsError);
+          throw fetchSeatsError;
+        }
 
-        const currentSeatCount = currentSeats?.length || 0;
-        const newSeatCount = formData.totalSeats;
+        // Delete seat_amenities for all these seats
+        if (existingSeats && existingSeats.length > 0) {
+          const seatIds = existingSeats.map(s => s.id);
+          console.log(`[UPDATE] Deleting seat_amenities for ${seatIds.length} seats`);
+          
+          const { error: deleteAmenitiesError } = await supabase
+            .from("seat_amenities")
+            .delete()
+            .in("seat_id", seatIds);
 
-        if (newSeatCount > currentSeatCount) {
-          // Add new seats
-          const seatsToAdd = newSeatCount - currentSeatCount;
-          const newSeats = Array.from({ length: seatsToAdd }, () => ({
+          if (deleteAmenitiesError) {
+            console.error("[UPDATE] Error deleting seat_amenities:", deleteAmenitiesError);
+            // Continue anyway - seats might not have amenities
+          } else {
+            console.log("[UPDATE] Successfully deleted seat_amenities");
+          }
+        }
+
+        // Now delete the seats
+        console.log(`[UPDATE] Deleting seats for room ${roomId}`);
+        const { error: deleteSeatsError } = await supabase
+          .from("seat")
+          .delete()
+          .eq("room_id", roomId);
+
+        if (deleteSeatsError) {
+          console.error("[UPDATE] Error deleting seats:", deleteSeatsError);
+          throw deleteSeatsError;
+        }
+
+        console.log("[UPDATE] Successfully deleted seats");
+
+        // Step 3: Insert new seats
+        if (formData.seats.length > 0) {
+          const seats = formData.seats.map((seat) => ({
             room_id: roomId,
+            number: seat.number,
             status: "available" as const,
+            note: seat.isSpecial ? seat.note || null : null,
           }));
 
-          const { error: addSeatsError } = await supabase
+          console.log(`[UPDATE] Creating ${seats.length} seats for room ${roomId}`);
+
+          const { data: insertedSeats, error: insertError } = await supabase
             .from("seat")
-            .insert(newSeats);
+            .insert(seats)
+            .select();
 
-          if (addSeatsError) throw addSeatsError;
-        } else if (newSeatCount < currentSeatCount) {
-          // Delete excess seats from the database
-          const seatsToRemove = currentSeatCount - newSeatCount;
-          const seatsToDelete =
-            currentSeats?.slice(-seatsToRemove).map((s) => s.id) || [];
+          if (insertError) {
+            console.error("[UPDATE] Error creating seats:", insertError);
+            throw new Error(`Failed to create seats: ${insertError.message}`);
+          }
 
-          const { error: deleteSeatsError } = await supabase
-            .from("seat")
-            .delete()
-            .in("id", seatsToDelete);
+          console.log(`[UPDATE] Successfully created ${insertedSeats?.length || 0} seats`);
 
-          if (deleteSeatsError) throw deleteSeatsError;
+          // Step 4: Create seat_amenities for each seat
+          if (insertedSeats && insertedSeats.length > 0) {
+            const allSeatAmenities: {
+              seat_id: string;
+              amenity_id: string;
+              enabled: boolean;
+            }[] = [];
+
+            insertedSeats.forEach((insertedSeat, index) => {
+              const formSeat = formData.seats![index];
+              
+              console.log(`[UPDATE] Processing seat ${index + 1}:`, {
+                amenities: formSeat.amenities,
+                pendingAmenities: formSeat.pendingAmenities,
+              });
+              
+              // Combine existing amenity IDs with newly created ones from pending
+              const amenityIds = [...(formSeat.amenities || [])];
+              
+              // Add IDs for pending amenities that were just created
+              if (formSeat.pendingAmenities) {
+                formSeat.pendingAmenities.forEach((name) => {
+                  const createdId = amenityIdMap.get(name);
+                  if (createdId) {
+                    console.log(`[UPDATE] Adding pending amenity "${name}" with ID ${createdId}`);
+                    amenityIds.push(createdId);
+                  }
+                });
+              }
+
+              console.log(`[UPDATE] Total amenity IDs for seat ${index + 1}:`, amenityIds);
+
+              // Create seat_amenities records (only for enabled amenities)
+              amenityIds.forEach((amenityId) => {
+                allSeatAmenities.push({
+                  seat_id: insertedSeat.id,
+                  amenity_id: amenityId,
+                  enabled: true,
+                });
+              });
+            });
+
+            console.log(`[UPDATE] Inserting ${allSeatAmenities.length} seat_amenities records:`, allSeatAmenities);
+
+            // Insert all seat_amenities at once
+            if (allSeatAmenities.length > 0) {
+              const { error: seatAmenitiesError } = await supabase
+                .from("seat_amenities")
+                .insert(allSeatAmenities);
+
+              if (seatAmenitiesError) {
+                console.error("[UPDATE] Error creating seat amenities:", seatAmenitiesError);
+                // Don't throw - seats were created successfully
+              } else {
+                console.log(`[UPDATE] Successfully created ${allSeatAmenities.length} seat amenity associations`);
+              }
+            } else {
+              console.log("[UPDATE] No amenities to create for this room");
+            }
+          }
         }
       }
 

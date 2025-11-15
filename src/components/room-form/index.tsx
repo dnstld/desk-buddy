@@ -7,13 +7,14 @@ import {
 } from "@/src/validations/room-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useRef } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { ScrollView, Text, TextInput, View } from "react-native";
 import ModalActions from "../modal-actions";
 import Tabs, { TabsRef } from "../ui/tabs";
 import AmenitiesSection from "./AmenitiesSection";
 import PickerField from "./PickerField";
 import RoomTypeSelector from "./RoomTypeSelector";
+import SeatsSection from "./SeatsSection";
 
 interface RoomFormProps {
   initialData?: Partial<RoomWithDetails>;
@@ -36,25 +37,48 @@ export default function RoomForm({
   const floorOptions = useFloorOptions();
   const tabsRef = useRef<TabsRef>(null);
 
-  const seatsOptions = Array.from({ length: 120 }, (_, i) => ({
-    value: i + 1,
-    label: `${i + 1} ${i + 1 === 1 ? "seat" : "seats"}`,
-  }));
+  // Convert existing room data to new format
+  const getInitialSeatsData = () => {
+    if (!initialData?.seats || initialData.seats.length === 0) {
+      return {
+        totalSeats: 1,
+        seats: [{ number: 1, isSpecial: false, note: "" }],
+      };
+    }
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
-    watch,
-  } = useForm<RoomFormData>({
+    const seats = initialData.seats.map((seat) => {
+      // Extract enabled amenity IDs from seat_amenities
+      const amenities =
+        seat.seat_amenities
+          ?.filter((sa: any) => sa.enabled)
+          .map((sa: any) => sa.amenity_id) || [];
+
+      return {
+        id: seat.id,
+        number: seat.number,
+        isSpecial: !!(seat.note && seat.note.length > 0),
+        note: seat.note || "",
+        amenities,
+      };
+    });
+
+    return {
+      totalSeats: initialData.seats.length,
+      seats,
+    };
+  };
+
+  const initialSeatsData = getInitialSeatsData();
+
+  const formMethods = useForm<RoomFormData>({
     resolver: zodResolver(roomFormSchema),
     defaultValues: {
       ...defaultRoomFormValues,
       ...(initialData && {
         name: initialData.name || "",
         description: initialData.description || "",
-        totalSeats: initialData.capacity || 1,
+        totalSeats: initialSeatsData.totalSeats,
+        seats: initialSeatsData.seats,
         meeting: initialData.type === "meeting",
         wheelchair: initialData.wheelchair_accessible || false,
         elevator: initialData.has_elevator || false,
@@ -64,6 +88,14 @@ export default function RoomForm({
       }),
     },
   });
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    watch,
+  } = formMethods;
 
   const onFormSubmit = async (data: RoomFormData) => {
     try {
@@ -75,6 +107,7 @@ export default function RoomForm({
 
       onSuccess?.();
     } catch (error) {
+      console.error("[RoomForm] Error saving room:", error);
       onError?.(
         error instanceof Error ? error : new Error("Failed to save room")
       );
@@ -94,7 +127,7 @@ export default function RoomForm({
       errors.petFriendly
     ) {
       tabsRef.current?.setActiveTab("room");
-    } else if (errors.totalSeats) {
+    } else if (errors.totalSeats || errors.seats) {
       tabsRef.current?.setActiveTab("seats");
     }
   });
@@ -234,31 +267,7 @@ export default function RoomForm({
     </ScrollView>
   );
 
-  const seatsTab = (
-    <ScrollView className="flex-1">
-      <View className="p-8 gap-4">
-        {/* Total Seats */}
-        <Controller
-          control={control}
-          name="totalSeats"
-          rules={{
-            required: "Total seats is required",
-            min: { value: 1, message: "Total seats must be at least 1" },
-            max: { value: 120, message: "Total seats cannot exceed 120" },
-          }}
-          render={({ field: { onChange, value } }) => (
-            <PickerField
-              label="Total Seats"
-              value={value}
-              options={seatsOptions}
-              onChange={onChange}
-              error={errors.totalSeats?.message}
-            />
-          )}
-        />
-      </View>
-    </ScrollView>
-  );
+  const seatsTab = <SeatsSection />;
 
   const totalSeats = watch("totalSeats");
 
@@ -273,10 +282,10 @@ export default function RoomForm({
     errors.petFriendly
   );
 
-  const seatsTabHasErrors = !!errors.totalSeats;
+  const seatsTabHasErrors = !!(errors.totalSeats || errors.seats);
 
   return (
-    <>
+    <FormProvider {...formMethods}>
       <Tabs
         ref={tabsRef}
         tabs={[
@@ -304,6 +313,6 @@ export default function RoomForm({
         submitIcon="content-save"
         isLoading={isSubmitting || isLoading}
       />
-    </>
+    </FormProvider>
   );
 }

@@ -8,9 +8,16 @@ import WorkspaceGrid from "../workspace-grid";
 interface SeatGridProps {
   seats: Seat[];
   meeting?: boolean;
+  editMode?: boolean;
+  onSeatPress?: (seatIndex: number) => void;
 }
 
-export default function SeatGrid({ seats, meeting = false }: SeatGridProps) {
+export default function SeatGrid({
+  seats,
+  meeting = false,
+  editMode = false,
+  onSeatPress,
+}: SeatGridProps) {
   const {
     currentPage,
     containerWidth,
@@ -53,6 +60,8 @@ export default function SeatGrid({ seats, meeting = false }: SeatGridProps) {
           containerWidth={containerWidth}
           onScroll={handleScroll}
           onLayout={handleLayout}
+          editMode={editMode}
+          onSeatPress={onSeatPress}
         />
       ) : (
         <WorkspaceGrid
@@ -63,6 +72,8 @@ export default function SeatGrid({ seats, meeting = false }: SeatGridProps) {
           containerWidth={containerWidth}
           onScroll={handleScroll}
           onLayout={handleLayout}
+          editMode={editMode}
+          onSeatPress={onSeatPress}
         />
       )}
     </View>
