@@ -10,7 +10,6 @@ export type Seat = Database["public"]["Tables"]["seat"]["Row"] & {
   reservation?: Reservation[]; // Note: singular field name but plural data
   seat_amenities?: {
     amenity_id: string;
-    enabled: boolean;
     amenities?: Database["public"]["Tables"]["amenities"]["Row"];
   }[];
   pendingAmenities?: string[]; // For form state - new amenities not yet saved to DB

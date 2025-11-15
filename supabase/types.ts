@@ -237,21 +237,18 @@ export type Database = {
         Row: {
           amenity_id: string | null
           created_at: string
-          enabled: boolean | null
           id: string
           seat_id: string | null
         }
         Insert: {
           amenity_id?: string | null
           created_at?: string
-          enabled?: boolean | null
           id?: string
           seat_id?: string | null
         }
         Update: {
           amenity_id?: string | null
           created_at?: string
-          enabled?: boolean | null
           id?: string
           seat_id?: string | null
         }

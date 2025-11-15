@@ -124,7 +124,6 @@ async function createSeatAmenities(
   const allSeatAmenities: {
     seat_id: string;
     amenity_id: string;
-    enabled: boolean;
   }[] = [];
 
   insertedSeats.forEach((insertedSeat, index) => {
@@ -149,12 +148,10 @@ async function createSeatAmenities(
 
     logger.debug(`Total amenity IDs for seat ${index + 1}:`, amenityIds);
 
-    // Create seat_amenities records (only for enabled amenities)
     amenityIds.forEach((amenityId) => {
       allSeatAmenities.push({
         seat_id: insertedSeat.id,
         amenity_id: amenityId,
-        enabled: true,
       });
     });
   });

@@ -47,11 +47,9 @@ export default function RoomForm({
     }
 
     const seats = initialData.seats.map((seat) => {
-      // Extract enabled amenity IDs from seat_amenities
+      // Extract amenity IDs from seat_amenities (all records are enabled by presence)
       const amenities =
-        seat.seat_amenities
-          ?.filter((sa: any) => sa.enabled)
-          .map((sa: any) => sa.amenity_id) || [];
+        seat.seat_amenities?.map((sa: any) => sa.amenity_id) || [];
 
       return {
         id: seat.id,

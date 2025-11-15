@@ -22,7 +22,6 @@ export function useFetchRoom(id: string | undefined) {
               *,
               seat_amenities(
                 amenity_id,
-                enabled,
                 amenities(*)
               ),
               reservation(
