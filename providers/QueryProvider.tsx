@@ -1,3 +1,4 @@
+import { logger } from "@/src/utils/logger";
 import {
   QueryClient,
   QueryClientProvider,
@@ -13,7 +14,7 @@ const queryClient = new QueryClient();
 
 // Online status management
 onlineManager.setEventListener((setOnline) => {
-  console.log("[QueryProvider] Online status management");
+  logger.debug("[QueryProvider] Online status management");
   const eventSubscription = Network.addNetworkStateListener(
     (state: Network.NetworkState) => {
       setOnline(!!state.isConnected);
@@ -24,7 +25,7 @@ onlineManager.setEventListener((setOnline) => {
 
 // Refetch on App focus
 function onAppStateChange(status: AppStateStatus) {
-  console.log("[QueryProvider] Refetch on App focus: ", status);
+  logger.debug("[QueryProvider] Refetch on App focus:", status);
   if (Platform.OS !== "web") {
     focusManager.setFocused(status === "active");
   }

@@ -228,40 +228,17 @@ export default function RoomForm({
         />
 
         {/* Amenities */}
-        <Controller
-          control={control}
-          name="wheelchair"
-          render={({
-            field: { value: wheelchair, onChange: onWheelchairChange },
-          }) => (
-            <Controller
-              control={control}
-              name="elevator"
-              render={({
-                field: { value: elevator, onChange: onElevatorChange },
-              }) => (
-                <Controller
-                  control={control}
-                  name="petFriendly"
-                  render={({
-                    field: {
-                      value: petFriendly,
-                      onChange: onPetFriendlyChange,
-                    },
-                  }) => (
-                    <AmenitiesSection
-                      wheelchair={wheelchair}
-                      elevator={elevator}
-                      petFriendly={petFriendly}
-                      onWheelchairChange={onWheelchairChange}
-                      onElevatorChange={onElevatorChange}
-                      onPetFriendlyChange={onPetFriendlyChange}
-                    />
-                  )}
-                />
-              )}
-            />
-          )}
+        <AmenitiesSection
+          wheelchair={watch("wheelchair")}
+          elevator={watch("elevator")}
+          petFriendly={watch("petFriendly")}
+          onWheelchairChange={(value) =>
+            formMethods.setValue("wheelchair", value)
+          }
+          onElevatorChange={(value) => formMethods.setValue("elevator", value)}
+          onPetFriendlyChange={(value) =>
+            formMethods.setValue("petFriendly", value)
+          }
         />
       </View>
     </ScrollView>
