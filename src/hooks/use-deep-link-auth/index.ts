@@ -86,17 +86,26 @@ export function useDeepLinkAuth() {
   useEffect(() => {
     let mounted = true;
 
-    Linking.getInitialURL()
-      .then((url) => {
-        if (url && mounted) {
-          handleDeepLink(url);
-        }
-      })
-      .catch((error) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
         if (__DEV__) {
-          console.error("[useDeepLinkAuth] Failed to get initial URL:", error);
+          console.log("[useDeepLinkAuth] Session exists, skipping initial URL processing");
         }
-      });
+        return;
+      }
+
+      Linking.getInitialURL()
+        .then((url) => {
+          if (url && mounted) {
+            handleDeepLink(url);
+          }
+        })
+        .catch((error) => {
+          if (__DEV__) {
+            console.error("[useDeepLinkAuth] Failed to get initial URL:", error);
+          }
+        });
+    });
 
     const subscription = Linking.addEventListener("url", ({ url }) => {
       if (mounted) {
