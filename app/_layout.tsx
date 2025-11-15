@@ -4,6 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ToastProvider } from "@/providers/ToastProvider";
+import ErrorBoundary from "@/src/components/error-boundary";
 
 import "@/global.css";
 
@@ -24,14 +25,16 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <QueryProvider>
-        <ToastProvider>
-          <AuthProvider>
-            <RootLayoutNav />
-          </AuthProvider>
-        </ToastProvider>
-      </QueryProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <RootLayoutNav />
+            </AuthProvider>
+          </ToastProvider>
+        </QueryProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
