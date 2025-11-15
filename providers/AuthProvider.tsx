@@ -122,6 +122,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setSignInError(null);
   }, []);
 
+  // Memoize context value to prevent unnecessary re-renders
+  // Callback functions (signInWithOtp, signOut, clearAuthError, clearSignInError)
+  // are already stable via useCallback, so they don't need to be in dependencies.
+  // This intentionally omits callbacks to prevent unnecessary re-renders.
   const value = useMemo<AuthContextType>(
     () => ({
       session,
@@ -137,6 +141,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearAuthError,
       clearSignInError,
     }),
+    // Intentionally omitting stable callback functions from dependencies
+    // to prevent unnecessary context re-renders across the entire app
     [
       session,
       isLoading,
@@ -145,10 +151,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isSigningIn,
       isSigningOut,
       signInError,
-      signInWithOtp,
-      signOut,
-      clearAuthError,
-      clearSignInError,
     ]
   );
 

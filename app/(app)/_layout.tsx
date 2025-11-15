@@ -4,13 +4,14 @@ import { colors } from "@/src/theme/colors";
 import { parseEmailDomain } from "@/src/utils/parse-email-domain";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Redirect, Tabs } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { Text, View } from "react-native";
 
-function CompanyName() {
+// Memoized company name component to prevent unnecessary re-renders
+const CompanyName = React.memo(() => {
   const { user } = useAuth();
 
-  const getCompanyName = () => {
+  const companyName = useMemo(() => {
     if (!user?.email) return "Company";
 
     try {
@@ -20,12 +21,15 @@ function CompanyName() {
     } catch {
       return "Company";
     }
-  };
+  }, [user?.email]);
 
-  return <Text className="text-sm text-white">{getCompanyName()}</Text>;
-}
+  return <Text className="text-sm text-white">{companyName}</Text>;
+});
 
-function Logo() {
+CompanyName.displayName = "CompanyName";
+
+// Memoized logo component - pure component with no props
+const Logo = React.memo(() => {
   return (
     <View className="flex-row items-center gap-1">
       <MaterialCommunityIcons
@@ -36,7 +40,9 @@ function Logo() {
       <Text className="text-base text-white font-black">WorkSpacey</Text>
     </View>
   );
-}
+});
+
+Logo.displayName = "Logo";
 
 export default function AppLayout() {
   const { session, isLoading } = useAuth();
