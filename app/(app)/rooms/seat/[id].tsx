@@ -226,7 +226,7 @@ export default function SeatPage() {
           presentation: "modal",
         }}
       />
-      <View className="flex-1 bg-background">
+      <View className="flex-1 bg-white">
         <ScrollView className="flex-1">
           <View className="p-8 gap-6 pb-32">
             {/* Special Note Section */}
