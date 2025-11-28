@@ -1,4 +1,4 @@
-import React, { Component, ReactNode } from "react";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 import ErrorFallback from "../error-fallback";
 
 interface ErrorBoundaryProps {
@@ -10,18 +10,6 @@ interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
 }
-
-/**
- * Error Boundary Component
- *
- * Catches JavaScript errors anywhere in the child component tree,
- * logs those errors, and displays a fallback UI instead of crashing the app.
- *
- * @example
- * <ErrorBoundary>
- *   <App />
- * </ErrorBoundary>
- */
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
@@ -31,9 +19,6 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     };
   }
 
-  /**
-   * Update state when an error is caught
-   */
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       hasError: true,
@@ -41,12 +26,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     };
   }
 
-  /**
-   * Log error details
-   * This is where you would integrate with error tracking services like Sentry
-   */
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log to console in development
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     if (__DEV__) {
       console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
       console.error("🚨 Error Boundary Caught an Error:");
@@ -64,9 +44,6 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     // });
   }
 
-  /**
-   * Reset error state and allow user to retry
-   */
   resetError = () => {
     this.setState({
       hasError: false,
@@ -79,12 +56,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     const { children, fallback } = this.props;
 
     if (hasError && error) {
-      // Use custom fallback if provided
       if (fallback) {
         return fallback(error, this.resetError);
       }
 
-      // Use default error fallback
       return <ErrorFallback error={error} resetError={this.resetError} />;
     }
 

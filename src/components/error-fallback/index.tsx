@@ -1,8 +1,8 @@
+import AuthLogo from "@/src/components/auth-logo";
 import Button from "@/src/components/ui/button";
-import { colors } from "@/src/theme/colors";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import Text from "@/src/components/ui/text";
 import React from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text as RNText, ScrollView, View } from "react-native";
 
 interface ErrorFallbackProps {
   error: Error;
@@ -14,73 +14,53 @@ export default function ErrorFallback({
   resetError,
 }: ErrorFallbackProps) {
   return (
-    <ScrollView
-      contentContainerClassName="flex-1 justify-center items-center p-8 bg-background"
-      bounces={false}
-    >
-      <View className="gap-6 items-center max-w-sm w-full">
-        {/* Error Icon */}
-        <View className="items-center gap-4">
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            size={80}
-            color={colors.error.DEFAULT}
-          />
+    <View className="flex-1 bg-error">
+      <ScrollView contentContainerClassName="flex-1 justify-center items-center px-4">
+        <View className="w-full max-w-xs gap-8">
+          <AuthLogo size="medium" />
 
-          {/* Title */}
-          <Text className="text-2xl font-bold text-white text-center">
-            Oops! Something went wrong
-          </Text>
-
-          {/* Description */}
-          <Text className="text-base text-gray-400 text-center">
-            The app encountered an unexpected error. Don't worry, your data is
-            safe. Please try restarting the app.
-          </Text>
-        </View>
-
-        {/* Error Details (Development Only) */}
-        {__DEV__ && error && (
-          <View className="w-full gap-2">
-            <Text className="text-sm font-semibold text-gray-300">
-              Error Details (Dev Mode):
+          <View className="gap-4">
+            <Text className="text-2xl font-bold text-center">
+              Oops! Something went wrong
             </Text>
-            <View className="bg-gray-900 p-4 rounded-lg w-full border border-gray-700">
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <Text className="text-error text-xs font-mono">
-                  {error.toString()}
+
+            <Text className="text-center">
+              The app encountered an unexpected error. Don't worry, your data is
+              safe.
+            </Text>
+
+            {__DEV__ && error && (
+              <View className="w-full gap-2 mt-4">
+                <Text className="text-sm font-semibold">
+                  Error Details (Dev Mode):
                 </Text>
-              </ScrollView>
-              {error.stack && (
-                <View className="mt-2 pt-2 border-t border-gray-700">
-                  <Text className="text-gray-500 text-xs font-mono">
-                    {error.stack.slice(0, 500)}
-                    {error.stack.length > 500 ? "..." : ""}
-                  </Text>
+                <View className="bg-black/20 p-4 rounded-lg w-full">
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <RNText className="text-white text-xs font-mono">
+                      {error.toString()}
+                    </RNText>
+                  </ScrollView>
+                  {error.stack && (
+                    <View className="mt-2 pt-2 border-t border-white/20">
+                      <RNText className="text-white/70 text-xs font-mono">
+                        {error.stack.slice(0, 300)}
+                        {error.stack.length > 300 ? "..." : ""}
+                      </RNText>
+                    </View>
+                  )}
                 </View>
-              )}
-            </View>
+              </View>
+            )}
+
+            <Button
+              onPress={resetError}
+              title="Restart App"
+              variant="ghost"
+              icon="refresh"
+            />
           </View>
-        )}
-
-        {/* Actions */}
-        <View className="w-full gap-3">
-          <Button
-            title="Restart App"
-            onPress={resetError}
-            variant="primary"
-            size="lg"
-            icon="refresh"
-          />
-
-          {__DEV__ && (
-            <Text className="text-xs text-gray-500 text-center">
-              💡 This error boundary caught a runtime error.{"\n"}
-              Check the console for more details.
-            </Text>
-          )}
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
