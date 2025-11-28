@@ -5,6 +5,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
 
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -46,6 +47,7 @@ function RootLayoutNav() {
     >
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(app)" />
+      <Stack.Screen options={{ presentation: "modal" }} name="(public)" />
       <Stack.Screen name="auth/callback" />
       <Stack.Screen name="index" />
     </Stack>
@@ -55,6 +57,7 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <ErrorBoundary>
+      <StatusBar style="dark" />
       <SafeAreaProvider>
         <QueryProvider>
           <ToastProvider>
