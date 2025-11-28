@@ -20,6 +20,9 @@ export default function Text({
   };
 
   return (
-    <RNText className={clsx(variantClasses[variant], className)} {...props} />
+    <RNText
+      className={clsx("text-foreground", variantClasses[variant], className)}
+      {...props}
+    />
   );
 }

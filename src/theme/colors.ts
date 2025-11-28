@@ -1,13 +1,13 @@
 
 export const colors = {
   primary: {
-    DEFAULT: '#4c97e5',
+    DEFAULT: '#F26422',
     50: '#f0f8fe',
     100: '#deedfb',
     200: '#c5e2f8',
     300: '#9dd0f3',
     400: '#77b9ed',
-    500: '#4c97e5',
+    500: '#F26422',
     600: '#377cd9',
     700: '#2e67c7',
     800: '#2b54a2',
@@ -56,6 +56,20 @@ export const colors = {
     900: '#7f1d1d',
     950: '#450a0a',
   },
+  warning: {
+    DEFAULT: '#ffdd00',
+    50: '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#ffdd00',
+    600: '#2563eb',
+    700: '#1d4ed8',
+    800: '#1e40af',
+    900: '#1e3a8a',
+    950: '#172554',
+  },
   info: {
     DEFAULT: '#3B82F6',
     50: '#eff6ff',
@@ -85,19 +99,33 @@ export const colors = {
     950: '#030712',
   },
   background: {
-    DEFAULT: '#131e34',
+    DEFAULT: '#ABC8E9',
     50: '#f3f6fc',
     100: '#e7eef7',
     200: '#c9daee',
     300: '#99bbe0',
     400: '#6397cd',
-    500: '#407dbb',
+    500: '#ABC8E9',
     600: '#2e619b',
     700: '#264e7e',
     800: '#234369',
     900: '#223a58',
     950: '#131e34',
   },
+  foreground: {
+    DEFAULT: '#030305',
+    50: '#f5f5f5',
+    100: '#e5e5e5',
+    200: '#cccccc',
+    300: '#666666',
+    400: '#333333',
+    500: '#030305',
+    600: '#010103',
+    700: '#010102',
+    800: '#000001',
+    900: '#000000',
+    950: '#000000',
+  }
 } as const;
 
 // Helper to convert hex to RGB values for CSS variables
