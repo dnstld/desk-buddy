@@ -1,21 +1,27 @@
-import { colors } from "@/src/theme/colors";
-import { ActivityIndicator, Text, View } from "react-native";
-import CallbackPageWrapper from "../callback-page-wrapper";
+import AuthLogo from "@/src/components/auth-logo";
+import Text from "@/src/components/ui/text";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 
 export default function AppLoading() {
   return (
-    <CallbackPageWrapper>
-      <View className="w-full max-w-sm gap-8">
-        <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
-        <View className="gap-2">
-          <Text className="text-2xl font-bold text-white text-center">
-            Setting up your account
-          </Text>
-          <Text className="text-base text-white text-center">
-            Please wait while we prepare everything
-          </Text>
+    <View className="flex-1 bg-primary">
+      <ScrollView contentContainerClassName="flex-1 justify-center items-center px-4">
+        <View className="w-full max-w-xs gap-8">
+          <AuthLogo size="medium" />
+
+          <View className="gap-4">
+            <Text className="text-2xl font-bold text-center">
+              Setting up your account
+            </Text>
+
+            <Text className="text-center">
+              Please wait while we prepare everything
+            </Text>
+
+            <ActivityIndicator size="large" color="#FFFFFF" />
+          </View>
         </View>
-      </View>
-    </CallbackPageWrapper>
+      </ScrollView>
+    </View>
   );
 }
