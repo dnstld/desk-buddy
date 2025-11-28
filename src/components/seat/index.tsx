@@ -1,10 +1,11 @@
+import Text from "@/src/components/ui/text";
 import { colors } from "@/src/theme/colors";
 import { Seat as SeatType } from "@/src/types/room";
 import { User } from "@/src/types/user";
 import { Database } from "@/supabase/types";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import Badge from "../ui/badge";
 
 interface SeatProps {
@@ -52,7 +53,8 @@ export default function Seat({
           </View>
         </View>
         <Text
-          className="text-white text-xs text-center p-[1px] rounded-sm absolute bottom-0 right-0 w-full bg-background/50"
+          variant="xs"
+          className="text-white text-center p-[1px] rounded-sm absolute bottom-0 right-0 w-full bg-background/50"
           numberOfLines={1}
           ellipsizeMode="tail"
         >

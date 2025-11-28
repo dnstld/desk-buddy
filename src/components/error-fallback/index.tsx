@@ -1,4 +1,4 @@
-import AuthLogo from "@/src/components/auth-logo";
+import Logo from "@/src/components/logo";
 import Button from "@/src/components/ui/button";
 import Text from "@/src/components/ui/text";
 import React from "react";
@@ -17,7 +17,7 @@ export default function ErrorFallback({
     <View className="flex-1 bg-error">
       <ScrollView contentContainerClassName="flex-1 justify-center items-center px-4">
         <View className="w-full max-w-xs gap-8">
-          <AuthLogo size="medium" />
+          <Logo size="medium" />
 
           <View className="gap-4">
             <Text className="text-2xl font-bold text-center">

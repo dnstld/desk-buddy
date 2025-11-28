@@ -1,5 +1,6 @@
+import Text from "@/src/components/ui/text";
 import { colors } from "@/src/theme/colors";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 
 export default function RoomsLoading() {
   return (
@@ -10,7 +11,7 @@ export default function RoomsLoading() {
           <Text className="text-2xl font-bold text-white text-center">
             Loading rooms
           </Text>
-          <Text className="text-base text-white text-center">
+          <Text className="text-white text-center">
             Please wait while we fetch your rooms
           </Text>
         </View>

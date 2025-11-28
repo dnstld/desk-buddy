@@ -1,7 +1,8 @@
+import Text from "@/src/components/ui/text";
 import { useSeatGrid } from "@/src/hooks";
 import { Seat } from "@/src/types/room";
 import React from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import MeetingGrid from "../meeting-grid";
 import WorkspaceGrid from "../workspace-grid";
 
@@ -34,7 +35,7 @@ export default function SeatGrid({
     return (
       <View className="items-center py-4 w-full">
         <View className="w-full h-8 bg-gray-100 rounded items-center justify-center">
-          <Text className="text-gray text-sm">
+          <Text variant="sm" className="text-gray">
             Oops! Seats failed to load. Try again later or reload the app.
           </Text>
         </View>

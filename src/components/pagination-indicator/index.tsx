@@ -1,5 +1,6 @@
+import Text from "@/src/components/ui/text";
 import React from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 interface PaginationIndicatorProps {
   currentPage: number;
@@ -26,7 +27,7 @@ export default function PaginationIndicator({
           />
         ))}
       </View>
-      <Text className="text-xs">
+      <Text variant="xs">
         {label} {currentPage + 1} of {totalPages}
       </Text>
     </View>

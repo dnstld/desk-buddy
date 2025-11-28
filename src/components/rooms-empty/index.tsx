@@ -1,7 +1,8 @@
+import Text from "@/src/components/ui/text";
 import { mockRooms } from "@/src/constants/mock-rooms";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import Room from "../room";
 import Button from "../ui/button";
 
@@ -21,10 +22,10 @@ export default function RoomsEmpty() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-2xl font-bold text-white text-center">
+            <Text variant="2xl" className="font-bold text-white text-center">
               Create your first room
             </Text>
-            <Text className="text-base text-white/80 text-center leading-6">
+            <Text className="text-white/80 text-center leading-6">
               Once you create a room, you can update its details before
               publishing it. Once published, it becomes available for
               reservations

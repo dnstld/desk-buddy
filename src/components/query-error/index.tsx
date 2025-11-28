@@ -1,7 +1,8 @@
 import Button from "@/src/components/ui/button";
+import Text from "@/src/components/ui/text";
 import { colors } from "@/src/theme/colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 interface QueryErrorProps {
   error: Error | null;
@@ -30,16 +31,16 @@ export default function QueryError({
           />
 
           <View className="gap-2">
-            <Text className="text-2xl font-bold text-white text-center">
+            <Text variant="2xl" className="font-bold text-white text-center">
               {title}
             </Text>
-            <Text className="text-base text-white text-center opacity-80">
+            <Text className="text-white text-center opacity-80">
               {description}
             </Text>
           </View>
 
           <View className="items-center bg-white/10 rounded-lg p-4 w-full">
-            <Text className="text-white text-center text-sm">
+            <Text variant="sm" className="text-white text-center">
               {errorMessage}
             </Text>
           </View>

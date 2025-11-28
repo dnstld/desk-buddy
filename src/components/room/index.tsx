@@ -1,9 +1,10 @@
+import Text from "@/src/components/ui/text";
 import { useRoom, useUser } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import React, { useCallback } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import SeatGrid from "../seat-grid";
 import Button from "../ui/button";
 import Chip from "../ui/chip";
@@ -85,7 +86,9 @@ function Room({
         <View className="flex-1 gap-2">
           <View className="flex-row gap-2 items-center">
             <MaterialCommunityIcons name="seat" />
-            <Text className="text-sm text-gray">{occupancyText}</Text>
+            <Text variant="sm" className="text-gray">
+              {occupancyText}
+            </Text>
           </View>
 
           <ProgressBar progress={percentOccupied} />
@@ -100,19 +103,21 @@ function Room({
               <Chip label={roomStatus.label} variant={roomStatus.variant} />
             </View>
 
-            <Text className="text-xs text-gray">Floor {floor}</Text>
+            <Text variant="xs" className="text-gray">
+              Floor {floor}
+            </Text>
           </View>
         </View>
       </View>
 
       {/* Room name */}
       <View>
-        <Text className="text-2xl font-bold leading-tight flex-1 mb-2">
+        <Text variant="2xl" className="font-bold leading-tight flex-1 mb-2">
           {name}
         </Text>
 
         {description && (
-          <Text className="text-sm text-gray" numberOfLines={3}>
+          <Text variant="sm" className="text-gray" numberOfLines={3}>
             {description}
           </Text>
         )}

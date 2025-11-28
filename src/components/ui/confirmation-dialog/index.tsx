@@ -1,6 +1,7 @@
+import Text from "@/src/components/ui/text";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
-import { Modal, Text, View } from "react-native";
+import { Modal, View } from "react-native";
 import resolveConfig from "tailwindcss/resolveConfig";
 import tailwindConfig from "../../../../tailwind.config.js";
 import Button from "../button";
@@ -65,13 +66,13 @@ export default function ConfirmationDialog({
                 />
               </View>
             )}
-            <Text className="text-xl font-bold text-gray-900 text-center">
+            <Text variant="xl" className="font-bold text-gray-900 text-center">
               {title}
             </Text>
           </View>
 
           {/* Message */}
-          <Text className="text-base text-gray-600 text-center mb-6 leading-relaxed">
+          <Text className="text-gray-600 text-center mb-6 leading-relaxed">
             {message}
           </Text>
 
