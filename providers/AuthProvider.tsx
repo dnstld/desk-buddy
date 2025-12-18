@@ -62,17 +62,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
   } = useDeepLinkAuth();
 
   useEffect(() => {
+    // Check for existing session on mount
+    const checkSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setSession(session);
+      } catch (error) {
+        console.error("[AuthProvider] Error getting session:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkSession();
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      setIsLoading(false);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [resetDeepLinkAuth]);
+  }, []);
 
   const signInWithOtp = useCallback(async (email: string) => {
     setIsSigningIn(true);

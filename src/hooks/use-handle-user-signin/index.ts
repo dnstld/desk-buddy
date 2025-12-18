@@ -18,16 +18,16 @@ export function useHandleUserSignIn() {
 
   return useMutation({
     mutationFn: handleUserSignIn,
-    onSuccess: (data: SignInResult) => {
+    onSuccess: async (data: SignInResult) => {
       if (data.success && data.user && authUser) {
-        queryClient.setQueryData<User>(["user", authUser.id], data.user);
-
-        if (__DEV__) {
-          console.log("[useHandleUserSignIn] User data cached:", data.user);
-          console.log("[useHandleUserSignIn] Cache key:", [
-            "user",
-            authUser.id,
-          ]);
+        // Invalidate all user-related queries to force a refetch
+        await queryClient.invalidateQueries({ queryKey: ["user"] });
+        
+        // Invalidate users list query if company_id is available
+        if (data.user.company_id) {
+          await queryClient.invalidateQueries({ 
+            queryKey: ["users", data.user.company_id] 
+          });
         }
       }
     },
@@ -57,14 +57,30 @@ async function handleUserSignIn(): Promise<SignInResult> {
       "handle-user-signin"
     );
 
-    if (error || !data?.success) {
+    if (error) {
+      if (__DEV__) {
+        console.error("[handleUserSignIn] Edge function error:", error);
+      }
       return {
         success: false,
-        error: data?.error ?? error?.message ?? "Failed to complete sign in",
+        error: error.message ?? "Failed to complete sign in",
+      };
+    }
+
+    if (!data?.success) {
+      if (__DEV__) {
+        console.error("[handleUserSignIn] Sign in failed:", data?.error);
+      }
+      return {
+        success: false,
+        error: data?.error ?? "Failed to complete sign in",
       };
     }
 
     if (!data.user) {
+      if (__DEV__) {
+        console.error("[handleUserSignIn] User data missing in response");
+      }
       return { success: false, error: "User data missing in response" };
     }
 

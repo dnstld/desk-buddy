@@ -204,6 +204,36 @@ async function restUpdate<T = unknown>(
 }
 
 /**
+ * Delete record from database via REST API
+ * @param table - Table name
+ * @param id - Record ID
+ * @returns Deleted record(s)
+ */
+async function restDelete<T = unknown>(
+  table: string,
+  id: string,
+): Promise<T> {
+  const url = `${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`;
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      apiKey: SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`REST delete failed (${response.status}): ${text}`);
+  }
+
+  // DELETE may return empty response
+  const text = await response.text();
+  return text ? JSON.parse(text) : {} as T;
+}
+
+/**
  * Create JSON response with CORS headers
  */
 function jsonResponse(data: ApiResponse, status = 200): Response {
@@ -302,8 +332,9 @@ Deno.serve(async (req: Request) => {
           auth_id: authId,
           email: email,
           company_id: company!.id,
+          role: 'member' as const, // Default role for new users
         };
-        const inserted = await restInsert<Partial<User>[]>('user', payload, 'id,company_id');
+        const inserted = await restInsert<Partial<User>[]>('user', payload, 'id,company_id,role');
         if (!Array.isArray(inserted) || inserted.length === 0) {
           throw new Error('User insert returned empty array');
         }
@@ -316,7 +347,7 @@ Deno.serve(async (req: Request) => {
       } catch (err) {
         console.error('User creation failed:', err);
         return jsonResponse(
-          { success: false, error: 'Failed to create user' },
+          { success: false, error: 'Failed to create user. Please try again.' },
           500,
         );
       }
@@ -331,8 +362,9 @@ Deno.serve(async (req: Request) => {
           auth_id: authId,
           email: email,
           company_id: null, // Will update this after creating company
+          role: 'member' as const, // Default role for new users
         };
-        const inserted = await restInsert<Partial<User>[]>('user', payload, 'id');
+        const inserted = await restInsert<Partial<User>[]>('user', payload, 'id,role');
         if (!Array.isArray(inserted) || inserted.length === 0) {
           throw new Error('User insert returned empty array');
         }
@@ -345,7 +377,7 @@ Deno.serve(async (req: Request) => {
       } catch (err) {
         console.error('User creation failed:', err);
         return jsonResponse(
-          { success: false, error: 'Failed to create user' },
+          { success: false, error: 'Failed to create user. Please try again.' },
           500,
         );
       }
@@ -374,8 +406,18 @@ Deno.serve(async (req: Request) => {
         console.log('Company created successfully:', company.id);
       } catch (err) {
         console.error('Company creation failed:', err);
+        
+        // Rollback: Delete the user we just created since company creation failed
+        try {
+          console.log('Rolling back user creation...');
+          await restDelete('user', userRow.id!);
+          console.log('User rollback successful');
+        } catch (rollbackErr) {
+          console.error('Failed to rollback user creation:', rollbackErr);
+        }
+        
         return jsonResponse(
-          { success: false, error: 'Failed to create company' },
+          { success: false, error: 'Failed to create company. Please try again.' },
           500,
         );
       }
@@ -389,8 +431,19 @@ Deno.serve(async (req: Request) => {
         userRow.company_id = company.id!;
       } catch (err) {
         console.error('Failed to update user with company_id:', err);
+        
+        // Rollback: Delete both user and company since the update failed
+        try {
+          console.log('Rolling back user and company creation...');
+          await restDelete('user', userRow.id!);
+          await restDelete('company', company.id!);
+          console.log('Rollback successful');
+        } catch (rollbackErr) {
+          console.error('Failed to rollback:', rollbackErr);
+        }
+        
         return jsonResponse(
-          { success: false, error: 'Failed to update user with company' },
+          { success: false, error: 'Failed to link user with company. Please try again.' },
           500,
         );
       }

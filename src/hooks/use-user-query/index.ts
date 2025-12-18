@@ -37,8 +37,6 @@ async function fetchUser(authId: string): Promise<User> {
     .eq("auth_id", authId)
     .single();
 
-  console.log("fetchUser - raw data:", data);
-
   if (error) {
     throw new Error(`Failed to fetch user data: ${error.message}`);
   }

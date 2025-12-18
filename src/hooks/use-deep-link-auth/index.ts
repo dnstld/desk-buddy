@@ -1,8 +1,8 @@
 import { supabase } from "@/src/lib/supabase";
 import {
-  getSupabaseAuthError,
-  parseAuthDeepLink,
-  validateAuthParams,
+    getSupabaseAuthError,
+    parseAuthDeepLink,
+    validateAuthParams,
 } from "@/src/utils/auth";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -15,8 +15,12 @@ export function useDeepLinkAuth() {
   const isProcessingRef = useRef(false);
 
   const handleDeepLink = useCallback(async (url: string) => {
-    if (processedUrlsRef.current.has(url)) return;
-    if (isProcessingRef.current) return;
+    if (processedUrlsRef.current.has(url)) {
+      return;
+    }
+    if (isProcessingRef.current) {
+      return;
+    }
 
     processedUrlsRef.current.add(url);
     isProcessingRef.current = true;
@@ -32,7 +36,9 @@ export function useDeepLinkAuth() {
         params.error ||
         params.errorCode;
 
-      if (!hasAuthParams) return;
+      if (!hasAuthParams) {
+        return;
+      }
 
       const { tokens, error: validationError } = validateAuthParams(params);
 
@@ -88,9 +94,6 @@ export function useDeepLinkAuth() {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        if (__DEV__) {
-          console.log("[useDeepLinkAuth] Session exists, skipping initial URL processing");
-        }
         return;
       }
 

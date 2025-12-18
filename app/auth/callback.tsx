@@ -1,85 +1,53 @@
 import AppLoading from "@/src/components/app-loading";
 import { router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "../../providers/AuthProvider";
-import { useHandleUserSignIn } from "../../src/hooks/use-handle-user-signin";
 
 export default function AuthCallbackScreen() {
   const { session, isLoading: isAuthLoading, authError, signOut } = useAuth();
-  const {
-    mutateAsync: signInUser,
-    error: mutationError,
-    status,
-    reset: resetMutation,
-  } = useHandleUserSignIn();
+  const processingRef = useRef(false);
 
   useEffect(() => {
-    if (isAuthLoading) return;
-    if (status !== "idle") return;
+    // Don't do anything while auth is still loading
+    if (isAuthLoading) {
+      return;
+    }
+
+    // Prevent concurrent processing
+    if (processingRef.current) {
+      return;
+    }
 
     const handleAuthFlow = async () => {
-      // Handle auth errors - redirect to login with error
-      if (authError && !session) {
-        if (__DEV__) {
-          console.error("[Callback] Auth error detected:", authError);
-        }
-        await signOut();
-        router.replace({
-          pathname: "/(auth)/login",
-          params: { error: authError },
-        });
-        return;
-      }
+      processingRef.current = true;
 
-      // Handle successful session - attempt sign in
-      if (session) {
-        try {
-          const result = await signInUser();
-          if (result.success) {
-            router.replace("/(app)/rooms");
-          }
-        } catch (err) {
-          if (__DEV__) {
-            console.error("[Callback] Sign in error:", err);
-          }
-          const errorMessage =
-            err instanceof Error ? err.message : "Failed to complete sign in";
+      try {
+        // Handle auth errors - redirect to login with error
+        if (authError) {
           await signOut();
           router.replace({
             pathname: "/(auth)/login",
-            params: { error: errorMessage },
+            params: { error: authError },
           });
+          return;
         }
+
+        // If we have a session, redirect to root
+        // The root index will handle user creation and proper routing
+        if (session) {
+          router.replace("/");
+          return;
+        }
+
+        // No session and no error yet - wait for deep link auth to process
+        processingRef.current = false; // Allow retry when session changes
+      } catch {
+        processingRef.current = false;
       }
     };
 
     handleAuthFlow();
-  }, [session, isAuthLoading, authError, status, signInUser, signOut]);
-
-  // Handle mutation errors after they occur
-  useEffect(() => {
-    if (mutationError) {
-      const errorMessage =
-        mutationError instanceof Error
-          ? mutationError.message
-          : "Failed to complete sign in";
-
-      if (__DEV__) {
-        console.error("[Callback] Mutation error:", mutationError);
-      }
-
-      const redirectWithError = async () => {
-        resetMutation();
-        await signOut();
-        router.replace({
-          pathname: "/(auth)/login",
-          params: { error: errorMessage },
-        });
-      };
-
-      redirectWithError();
-    }
-  }, [mutationError, resetMutation, signOut]);
+  }, [session, isAuthLoading, authError, signOut]);
 
   return <AppLoading />;
 }
