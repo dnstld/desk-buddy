@@ -11,7 +11,6 @@ import type {
   Company,
   EmailDomainInfo,
   User,
-  UserRole,
 } from '../_shared/types.ts';
 
 // Environment variables
@@ -290,13 +289,11 @@ Deno.serve(async (req: Request) => {
     );
 
     let company: Partial<Company> | null = null;
-    let userRole: UserRole;
     let userRow: Partial<User> | null = null;
 
     if (Array.isArray(existingCompanies) && existingCompanies.length > 0) {
-      // Company exists, user should be a member
+      // Company exists, create user linked to company
       company = existingCompanies[0];
-      userRole = 'member';
       console.log('Company exists, creating user as member');
 
       // 3) Create user with retry
@@ -304,9 +301,7 @@ Deno.serve(async (req: Request) => {
         const payload = {
           auth_id: authId,
           email: email,
-          name: email.split('@')[0], // Use email prefix as default name
           company_id: company!.id,
-          role: userRole,
         };
         const inserted = await restInsert<Partial<User>[]>('user', payload, 'id,company_id');
         if (!Array.isArray(inserted) || inserted.length === 0) {
@@ -329,16 +324,13 @@ Deno.serve(async (req: Request) => {
       // Company doesn't exist, need to create both user and company
       // Create user first (without company_id), then create company, then update user
       console.log('Company does not exist, creating user first...');
-      userRole = 'owner';
 
       // Step 1: Create user WITHOUT company_id
       const createUserWithoutCompany = async (): Promise<Partial<User>> => {
         const payload = {
           auth_id: authId,
           email: email,
-          name: email.split('@')[0],
           company_id: null, // Will update this after creating company
-          role: userRole,
         };
         const inserted = await restInsert<Partial<User>[]>('user', payload, 'id');
         if (!Array.isArray(inserted) || inserted.length === 0) {
@@ -358,19 +350,18 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      // Step 2: Create company with user's id as owner_id
+      // Step 2: Create company
       console.log('Creating company...');
 
       const createCompany = async (): Promise<Partial<Company>> => {
         const payload = {
           name: companyName,
           domain: domain,
-          owner_id: userRow!.id, // Use the user's ID, not auth_id
         };
         const inserted = await restInsert<Partial<Company>[]>(
           'company',
           payload,
-          'id,name,domain,owner_id',
+          'id,name,domain',
         );
         if (!Array.isArray(inserted) || inserted.length === 0) {
           throw new Error('Company insert returned empty array');

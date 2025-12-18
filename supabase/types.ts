@@ -78,15 +78,7 @@ export type Database = {
           owner_id?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "company_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       reservation: {
         Row: {

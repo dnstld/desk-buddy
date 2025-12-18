@@ -2,12 +2,12 @@ import { clsx } from "clsx";
 import { Text as RNText, TextProps as RNTextProps } from "react-native";
 
 interface TextProps extends RNTextProps {
-  variant?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
+  variant?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "5xl";
 }
 
 export default function Text({
   className,
-  variant = "base",
+  variant = "lg",
   ...props
 }: TextProps) {
   const variantClasses = {
@@ -17,6 +17,7 @@ export default function Text({
     lg: "text-lg",
     xl: "text-xl",
     "2xl": "text-2xl",
+    "5xl": "text-5xl",
   };
 
   return (

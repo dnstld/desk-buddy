@@ -10,14 +10,14 @@ export function useUserQuery() {
     queryKey: ["user", user?.id],
     queryFn: () => fetchUser(user!.id),
     enabled: !!user && !!session,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnMount: "always",
     retry: 2,
   });
 }
 
 export function useUser() {
   const query = useUserQuery();
-
   const role = query.data?.role as UserRole | undefined;
 
   return {
@@ -33,9 +33,11 @@ export function useUser() {
 async function fetchUser(authId: string): Promise<User> {
   const { data, error } = await supabase
     .from("user")
-    .select("*")
+    .select("id, auth_id, email, name, role, company_id, created_at")
     .eq("auth_id", authId)
     .single();
+
+  console.log("fetchUser - raw data:", data);
 
   if (error) {
     throw new Error(`Failed to fetch user data: ${error.message}`);

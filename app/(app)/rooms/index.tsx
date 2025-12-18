@@ -1,14 +1,13 @@
-import AppPageWrapper from "@/src/components/app-page-wrapper";
+import Onboarding from "@/src/components/onboarding";
 import QueryError from "@/src/components/query-error";
 import Room from "@/src/components/room";
-import RoomsEmpty from "@/src/components/rooms-empty";
-import RoomsLoading from "@/src/components/rooms-loading";
+import RoomsSkeleton from "@/src/components/rooms-skeleton";
 import FAB from "@/src/components/ui/fab";
 import { useRoomsQuery, useUser } from "@/src/hooks";
 import { RoomWithDetails } from "@/src/types/room";
 import { router } from "expo-router";
 import { useCallback, useMemo } from "react";
-import { FlatList, ListRenderItem } from "react-native";
+import { FlatList, ListRenderItem, ScrollView } from "react-native";
 
 // Approximate height of a Room component in pixels
 // Adjust this value based on your actual Room component height
@@ -47,11 +46,10 @@ export default function Rooms() {
   );
 
   // Memoize content container style
-  const contentContainerStyle = useMemo(() => ({ padding: 16, gap: 16 }), []);
-
-  if (isLoading) {
-    return <RoomsLoading />;
-  }
+  const contentContainerStyle = useMemo(
+    () => ({ padding: 16, flexGrow: 1 }),
+    []
+  );
 
   if (error) {
     return (
@@ -65,26 +63,38 @@ export default function Rooms() {
   }
 
   return (
-    <AppPageWrapper scrollable={false}>
-      <FlatList
-        data={rooms}
-        renderItem={renderRoom}
-        keyExtractor={keyExtractor}
-        contentContainerStyle={contentContainerStyle}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={<RoomsEmpty />}
-        // Performance optimizations
-        removeClippedSubviews={true} // Unmount components outside viewport
-        maxToRenderPerBatch={10} // Reduce number of items rendered per batch
-        updateCellsBatchingPeriod={50} // Increase time between renders
-        initialNumToRender={10} // Reduce initial render amount
-        windowSize={10} // Reduce viewport window size
-        getItemLayout={getItemLayout} // Enable item size optimization
-        // Memory optimization
-        onEndReachedThreshold={0.5} // Trigger onEndReached earlier
-      />
+    <>
+      {isLoading ? (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          className="flex-1 bg-background"
+        >
+          <RoomsSkeleton />
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={rooms}
+          renderItem={renderRoom}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={contentContainerStyle}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={<Onboarding />}
+          className="flex-1 bg-background"
+          // Performance optimizations
+          removeClippedSubviews={true} // Unmount components outside viewport
+          maxToRenderPerBatch={10} // Reduce number of items rendered per batch
+          updateCellsBatchingPeriod={50} // Increase time between renders
+          initialNumToRender={10} // Reduce initial render amount
+          windowSize={10} // Reduce viewport window size
+          getItemLayout={getItemLayout} // Enable item size optimization
+          // Memory optimization
+          onEndReachedThreshold={0.5} // Trigger onEndReached earlier
+        />
+      )}
 
-      {!isMember && <FAB onPress={handleCreateRoom} />}
-    </AppPageWrapper>
+      {!isMember && rooms && rooms.length > 0 && (
+        <FAB onPress={handleCreateRoom} />
+      )}
+    </>
   );
 }

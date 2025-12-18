@@ -1,13 +1,15 @@
 import { useAuth } from "@/providers/AuthProvider";
 import AppLoading from "@/src/components/app-loading";
+import Workspacey from "@/src/components/logo/workspacey";
+import Text from "@/src/components/ui/text";
+import { useRoomsQuery } from "@/src/hooks";
 import { colors } from "@/src/theme/colors";
 import { parseEmailDomain } from "@/src/utils/parse-email-domain";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, Tabs } from "expo-router";
 import React, { useMemo } from "react";
-import { Text, View } from "react-native";
 
-// Memoized company name component to prevent unnecessary re-renders
 const CompanyName = React.memo(() => {
   const { user } = useAuth();
 
@@ -23,29 +25,17 @@ const CompanyName = React.memo(() => {
     }
   }, [user?.email]);
 
-  return <Text className="text-sm text-white">{companyName}</Text>;
+  return <Text variant="xl">{companyName}</Text>;
 });
 
 CompanyName.displayName = "CompanyName";
 
-// Memoized logo component - pure component with no props
-const Logo = React.memo(() => {
-  return (
-    <View className="flex-row items-center gap-1">
-      <MaterialCommunityIcons
-        name="dots-grid"
-        size={16}
-        color={colors.primary.DEFAULT}
-      />
-      <Text className="text-base text-white font-black">WorkSpacey</Text>
-    </View>
-  );
-});
-
-Logo.displayName = "Logo";
-
 export default function AppLayout() {
   const { session, isLoading } = useAuth();
+
+  // Prefetch rooms data - starts loading immediately when layout mounts
+  // React Query will cache the result, so the rooms screen gets instant data
+  useRoomsQuery();
 
   if (isLoading) {
     return <AppLoading />;
@@ -58,26 +48,42 @@ export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary.DEFAULT,
-        tabBarInactiveTintColor: colors.gray[100],
+        tabBarActiveTintColor: colors.foreground.DEFAULT,
+        tabBarInactiveTintColor: colors.foreground.DEFAULT,
         tabBarStyle: {
-          backgroundColor: colors.background.DEFAULT,
+          backgroundColor: "transparent",
           borderTopWidth: 0,
           height: 80,
           paddingBottom: 24,
           paddingTop: 8,
         },
+        tabBarBackground: () => (
+          <LinearGradient
+            colors={[colors.background.DEFAULT, colors.background[100]]}
+            style={{ flex: 1 }}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
+        ),
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "500",
         },
         headerStyle: {
-          backgroundColor: colors.background.DEFAULT,
-          borderBottomWidth: 0,
-          shadowColor: "transparent",
+          backgroundColor: "transparent",
         },
+        headerBackground: () => (
+          <LinearGradient
+            colors={[colors.background[100], colors.background.DEFAULT]}
+            style={{ flex: 1 }}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
+        ),
         headerLeft: () => {
-          return <Logo />;
+          return (
+            <Workspacey width={120} accessibilityLabel="Workspacey text logo" />
+          );
         },
         headerLeftContainerStyle: {
           paddingLeft: 16,
@@ -95,11 +101,11 @@ export default function AppLayout() {
         name="rooms"
         options={{
           tabBarLabel: "Rooms",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
-              name="dots-grid"
+              name="view-grid-outline"
               size={size}
-              color={color}
+              color={focused ? colors.primary.DEFAULT : color}
             />
           ),
         }}
@@ -108,11 +114,11 @@ export default function AppLayout() {
         name="dashboard"
         options={{
           tabBarLabel: "Dashboard",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name="chart-bar"
               size={size}
-              color={color}
+              color={focused ? colors.primary.DEFAULT : color}
             />
           ),
         }}
@@ -121,11 +127,11 @@ export default function AppLayout() {
         name="users"
         options={{
           tabBarLabel: "Users",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name="account-multiple"
               size={size}
-              color={color}
+              color={focused ? colors.primary.DEFAULT : color}
             />
           ),
         }}
@@ -134,8 +140,12 @@ export default function AppLayout() {
         name="settings"
         options={{
           tabBarLabel: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cog" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <MaterialCommunityIcons
+              name="cog"
+              size={size}
+              color={focused ? colors.primary.DEFAULT : color}
+            />
           ),
         }}
       />

@@ -11,8 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "associatedDomains": [
+        "applinks:deskbuddy.app",
         "applinks:deskbuddy.app"
-      ]
+      ],
+      "bundleIdentifier": "com.anonymous.deskbuddy"
     },
     "android": {
       "adaptiveIcon": {
@@ -36,8 +38,22 @@
             "BROWSABLE",
             "DEFAULT"
           ]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "app.deskbuddy"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
-      ]
+      ],
+      "package": "com.anonymous.deskbuddy"
     },
     "web": {
       "output": "static",

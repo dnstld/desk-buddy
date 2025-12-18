@@ -24,14 +24,14 @@ export default function ModalActions({
   disabled = false,
 }: ModalActionsProps) {
   return (
-    <View className="p-8 border-t border-gray-200 bg-white">
+    <View className="p-8 bg-background-50">
       <View className="flex-row gap-4">
         {onCancel && (
           <View className="flex-1">
             <Button
               title={cancelText}
               onPress={onCancel}
-              variant="secondary"
+              variant="ghost"
               icon="close"
               disabled={isLoading || disabled}
             />

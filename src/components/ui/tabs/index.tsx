@@ -29,7 +29,7 @@ const Tabs = forwardRef<TabsRef, TabsProps>(({ tabs, defaultTab }, ref) => {
   return (
     <View className="flex-1">
       {/* Tab Headers */}
-      <View className="flex-row border-b border-gray-200 bg-white">
+      <View className="flex-row border-b border-background-50 bg-background-50">
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.id}

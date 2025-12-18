@@ -1,8 +1,30 @@
-import { Stack } from "expo-router";
+import { colors } from "@/src/theme/colors";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { Stack, useRouter } from "expo-router";
+import { Pressable } from "react-native";
 
 export default function PublicLayout() {
+  const router = useRouter();
+
+  const headerRight = () => (
+    <Pressable onPress={() => router.back()}>
+      <MaterialCommunityIcons
+        name="close"
+        size={24}
+        color={colors.foreground.DEFAULT}
+      />
+    </Pressable>
+  );
+
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.background.DEFAULT,
+        },
+        headerRight,
+      }}
+    >
       <Stack.Screen
         name="how-it-works"
         options={{

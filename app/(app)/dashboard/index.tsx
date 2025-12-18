@@ -6,8 +6,8 @@ export default function Dashboard() {
   return (
     <AppPageWrapper className="items-center justify-center">
       <View className="items-center">
-        <Text className="text-white text-lg">Dashboard</Text>
-        <Text className="text-gray-400">Coming soon</Text>
+        <Text>Dashboard</Text>
+        <Text>Coming soon</Text>
       </View>
     </AppPageWrapper>
   );

@@ -6,8 +6,8 @@ export default function Users() {
   return (
     <AppPageWrapper className="items-center justify-center">
       <View className="items-center">
-        <Text className="text-white text-lg">Users</Text>
-        <Text className="text-gray-400">Coming soon</Text>
+        <Text>Users</Text>
+        <Text>Coming soon</Text>
       </View>
     </AppPageWrapper>
   );

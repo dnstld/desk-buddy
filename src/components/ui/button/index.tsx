@@ -1,7 +1,8 @@
+import Text from "@/src/components/ui/text";
 import { colors } from "@/src/theme/colors";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 type ButtonVariant =
   | "primary"
@@ -78,9 +79,9 @@ const VARIANT_STYLES: Record<
     iconColor: colors.success.DEFAULT,
   },
   ghost: {
-    container: "bg-transparent border-transparent",
-    text: "text-primary",
-    iconColor: colors.primary.DEFAULT,
+    container: "bg-transparent",
+    text: "text-base",
+    iconColor: "#000104",
   },
 };
 

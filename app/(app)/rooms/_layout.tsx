@@ -1,20 +1,21 @@
-import { colors } from "@/src/theme/colors";
 import { Stack } from "expo-router";
 
 export default function RoomsLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.background.DEFAULT,
-        },
-        headerTintColor: colors.gray[50],
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
+        headerShown: false,
       }}
     >
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="index" />
+      <Stack.Screen
+        name="confirm-ownership/index"
+        options={{
+          title: "Confirm Ownership",
+          presentation: "modal",
+          headerShown: false,
+        }}
+      />
       <Stack.Screen
         name="create/index"
         options={{

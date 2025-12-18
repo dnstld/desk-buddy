@@ -27,7 +27,7 @@ export default function CreateRoom() {
   };
 
   return (
-    <View className="flex-1 bg-background-100">
+    <View className="flex-1 bg-background-50">
       <RoomForm
         onSubmit={handleSubmit}
         onSuccess={handleSuccess}
