@@ -1,4 +1,4 @@
-import Logo from "@/src/components/logo";
+import Logo from "@/src/components/features/auth/logo";
 import Text from "@/src/components/ui/text";
 import { colors } from "@/src/theme/colors";
 import { ActivityIndicator, ScrollView, View } from "react-native";

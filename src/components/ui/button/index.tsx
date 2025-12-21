@@ -20,6 +20,7 @@ type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps {
   title?: string;
+  description?: string;
   onPress: () => void;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -93,6 +94,7 @@ const SIZE_CONFIG = {
 
 export default function Button({
   title,
+  description,
   onPress,
   variant = "primary",
   size = "md",
@@ -134,17 +136,31 @@ export default function Button({
           )
         )}
 
-        {title && (
-          <Text
-            className={`
-              font-medium
-              ${variantConfig.text}
-              ${sizeConfig.text}
-            `.trim()}
-          >
-            {title}
-          </Text>
-        )}
+        <View className="flex-1">
+          {title && (
+            <Text
+              className={`
+                font-medium
+                ${variantConfig.text}
+                ${sizeConfig.text}
+              `.trim()}
+            >
+              {title}
+            </Text>
+          )}
+
+          {description && (
+            <Text
+              className={`
+                ${variantConfig.text}
+                text-sm
+                mt-0.5
+              `.trim()}
+            >
+              {description}
+            </Text>
+          )}
+        </View>
       </View>
     </Pressable>
   );

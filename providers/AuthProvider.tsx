@@ -1,6 +1,7 @@
-import { useDeepLinkAuth } from "@/src/hooks/use-deep-link-auth";
+import { useDeepLinkAuth } from "@/src/components/features/auth/hooks/use-deep-link-auth";
 import { supabase } from "@/src/lib/supabase";
-import { normalizeEmail } from "@/src/utils/auth";
+import { useStorage } from "@/src/shared/hooks/use-storage";
+import { normalizeEmail } from "@/src/shared/utils/auth";
 import { Session, User } from "@supabase/supabase-js";
 import * as Linking from "expo-linking";
 import React, {
@@ -53,6 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
+  const { removeItem } = useStorage();
 
   const {
     authError,
@@ -89,33 +91,47 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, []);
 
-  const signInWithOtp = useCallback(async (email: string) => {
-    setIsSigningIn(true);
-    setSignInError(null);
+  const signInWithOtp = useCallback(
+    async (email: string) => {
+      setIsSigningIn(true);
+      setSignInError(null);
 
-    try {
-      const normalizedEmail = normalizeEmail(email);
+      try {
+        const normalizedEmail = normalizeEmail(email);
 
-      const redirectUrl = __DEV__
-        ? Linking.createURL("/auth/callback")
-        : `${REDIRECT_URL}/auth/callback`;
+        // Sign out any existing session first to prevent sending magic link to wrong email
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email: normalizedEmail,
-        options: {
-          emailRedirectTo: redirectUrl,
-          shouldCreateUser: true,
-        },
-      });
+        if (session) {
+          await supabase.auth.signOut();
+          // Clear stored email
+          await removeItem("email");
+        }
 
-      if (error) {
-        setSignInError(error.message);
-        throw error;
+        const redirectUrl = __DEV__
+          ? Linking.createURL("/auth/callback")
+          : `${REDIRECT_URL}/auth/callback`;
+
+        const { error } = await supabase.auth.signInWithOtp({
+          email: normalizedEmail,
+          options: {
+            emailRedirectTo: redirectUrl,
+            shouldCreateUser: true,
+          },
+        });
+
+        if (error) {
+          setSignInError(error.message);
+          throw error;
+        }
+      } finally {
+        setIsSigningIn(false);
       }
-    } finally {
-      setIsSigningIn(false);
-    }
-  }, []);
+    },
+    [removeItem]
+  );
 
   const signOut = useCallback(async () => {
     setIsSigningOut(true);
@@ -127,11 +143,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw error;
       }
 
+      // Clear stored email when signing out
+      await removeItem("email");
+
       resetDeepLinkAuth();
     } finally {
       setIsSigningOut(false);
     }
-  }, [resetDeepLinkAuth]);
+  }, [resetDeepLinkAuth, removeItem]);
 
   const clearSignInError = useCallback(() => {
     setSignInError(null);

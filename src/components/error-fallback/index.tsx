@@ -1,4 +1,4 @@
-import Logo from "@/src/components/logo";
+import Logo from "@/src/components/features/auth/logo";
 import Button from "@/src/components/ui/button";
 import Text from "@/src/components/ui/text";
 import React from "react";

@@ -46,7 +46,8 @@ function RootLayoutNav() {
       }}
     >
       <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(app)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen options={{ presentation: "modal" }} name="(modals)" />
       <Stack.Screen options={{ presentation: "modal" }} name="(public)" />
       <Stack.Screen name="auth/callback" />
       <Stack.Screen name="index" />

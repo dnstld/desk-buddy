@@ -58,6 +58,7 @@ export type Database = {
           created_at: string
           domain: string | null
           id: string
+          manager_id: string | null
           name: string | null
           owner_id: string | null
           updated_at: string | null
@@ -66,6 +67,7 @@ export type Database = {
           created_at?: string
           domain?: string | null
           id?: string
+          manager_id?: string | null
           name?: string | null
           owner_id?: string | null
           updated_at?: string | null
@@ -74,6 +76,7 @@ export type Database = {
           created_at?: string
           domain?: string | null
           id?: string
+          manager_id?: string | null
           name?: string | null
           owner_id?: string | null
           updated_at?: string | null

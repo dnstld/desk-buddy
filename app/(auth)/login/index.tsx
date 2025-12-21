@@ -1,14 +1,14 @@
 import { useAuth } from "@/providers/AuthProvider";
-import AuthMessage from "@/src/components/auth-message";
-import AuthPageWrapper from "@/src/components/auth-page-wrapper";
-import LoginForm from "@/src/components/login-form";
-import Logo from "@/src/components/logo";
-import { useStorage } from "@/src/hooks/use-storage";
-import { parseAuthError } from "@/src/utils/auth-error-handler";
+import AuthMessage from "@/src/components/features/auth/auth-message";
+import AuthPageWrapper from "@/src/components/features/auth/auth-page-wrapper";
+import LoginForm from "@/src/components/features/auth/login-form";
+import Logo from "@/src/components/features/auth/logo";
+import { useStorage } from "@/src/shared/hooks/use-storage";
+import { parseAuthError } from "@/src/shared/utils/auth-error-handler";
 import {
   LoginFormData,
   VALIDATION_MESSAGES,
-} from "@/src/validations/login-validation";
+} from "@/src/shared/validations/login-validation";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -24,25 +24,26 @@ export default function LoginScreen(): React.JSX.Element {
   const params = useLocalSearchParams();
 
   const form = useForm<LoginFormData>({
-    mode: "onSubmit",
+    mode: "onChange",
     defaultValues: {
       email: "",
     },
   });
 
-  const { watch, reset, setValue } = form;
+  const { watch, reset } = form;
   const email = watch("email");
 
-  // Prefill email from storage
+  // Prefill email from storage - only once on mount
   useEffect(() => {
     const loadSavedEmail = async () => {
       const savedEmail = await getItem("email");
       if (savedEmail) {
-        setValue("email", savedEmail, { shouldValidate: true });
+        form.setValue("email", savedEmail, { shouldValidate: true });
       }
     };
     loadSavedEmail();
-  }, [getItem, setValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   // Handle URL error parameter
   useEffect(() => {

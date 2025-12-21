@@ -1,9 +1,9 @@
 import { supabase } from "@/src/lib/supabase";
 import {
-    getSupabaseAuthError,
-    parseAuthDeepLink,
-    validateAuthParams,
-} from "@/src/utils/auth";
+  getSupabaseAuthError,
+  parseAuthDeepLink,
+  validateAuthParams,
+} from "@/src/shared/utils/auth";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useRef, useState } from "react";
 

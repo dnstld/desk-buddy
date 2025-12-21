@@ -25,8 +25,12 @@ export default function Dropdown({
   const [isVisible, setIsVisible] = useState(false);
   const triggerRef = useRef<View>(null);
 
+  console.log("[Dropdown] Items received:", items);
+  console.log("[Dropdown] Items count:", items.length);
+
   const openDropdown = () => {
     if (!disabled) {
+      console.log("[Dropdown] Opening dropdown with items:", items);
       setIsVisible(true);
     }
   };
@@ -57,9 +61,18 @@ export default function Dropdown({
   // Calculate dropdown position
   const dropdownWidth = 160;
 
+  console.log("[Dropdown] Modal visible:", isVisible);
+
   return (
     <>
-      <Pressable ref={triggerRef} onPress={openDropdown} disabled={disabled}>
+      <Pressable
+        ref={triggerRef}
+        onPress={() => {
+          console.log("[Dropdown] Pressable clicked! Disabled:", disabled);
+          openDropdown();
+        }}
+        disabled={disabled}
+      >
         {children}
       </Pressable>
 
@@ -81,35 +94,38 @@ export default function Dropdown({
             }}
             className="bg-white rounded-lg shadow-lg border border-gray-200 py-2 mx-4"
           >
-            {items.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                onPress={() => handleItemPress(item)}
-                disabled={item.disabled}
-                className={`
+            {items.map((item, index) => {
+              console.log("[Dropdown] Rendering item:", item.id, item.label);
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  onPress={() => handleItemPress(item)}
+                  disabled={item.disabled}
+                  className={`
                   flex-row items-center px-4 py-3 
                   ${item.disabled ? "opacity-50" : "active:bg-gray-50"}
                   ${index < items.length - 1 ? "border-b border-gray-100" : ""}
                 `.trim()}
-              >
-                {item.icon && (
-                  <MaterialCommunityIcons
-                    name={item.icon}
-                    size={20}
-                    color={getItemIconColor(item)}
-                    style={{ marginRight: 12 }}
-                  />
-                )}
-                <Text
-                  className={`
+                >
+                  {item.icon && (
+                    <MaterialCommunityIcons
+                      name={item.icon}
+                      size={20}
+                      color={getItemIconColor(item)}
+                      style={{ marginRight: 12 }}
+                    />
+                  )}
+                  <Text
+                    className={`
                     text-base font-medium flex-1
                     ${getItemTextColor(item)}
                   `.trim()}
-                >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </Pressable>
         </Pressable>
       </Modal>

@@ -1,4 +1,4 @@
-import AppPageWrapper from "@/src/components/app-page-wrapper";
+import AppPageWrapper from "@/src/components/layout/app-page-wrapper";
 import React from "react";
 import { Text, View } from "react-native";
 
